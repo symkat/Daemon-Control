@@ -586,7 +586,7 @@ SymKat I<E<lt>symkat@symkat.comE<gt>> ( Blog: L<http://symkat.com/> )
 
 =head2 CONTRIBUTORS
 
-Matt S. Trout (mst) <mst@mst@shadowcat.co.uk>
+Matt S. Trout (mst) I<E<lt>mst@mst@shadowcat.co.ukE<gt>>
 
 =head1 COPYRIGHT
 
@@ -598,4 +598,4 @@ This library is free software and may be distributed under the same terms as per
 
 =head2 AVAILABILITY
 
-
+The most current version of Daemon::Control can be found at L<https://github.com/symkat/Daemon-Control>
