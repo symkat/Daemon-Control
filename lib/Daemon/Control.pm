@@ -9,7 +9,7 @@ our $VERSION = '0.001000'; # 0.1.0
 $VERSION = eval $VERSION;
 
 my @accessors = qw(
-    pid color_map name code program program_args 
+    pid color_map name program program_args 
     uid path gid scan_name stdout_file stderr_file pid_file fork data 
     lsb_start lsb_stop lsb_sdesc lsb_desc redirect_before_fork
 );
@@ -298,7 +298,7 @@ sub run {
     my ( $self ) = @_;
    
     # Error Checking.
-    if ( ( ! $self->code ) && ( ! $self->program ) ) {
+    if ( ! $self->program ) {
         die "Error: program must be defined.";
     }
     if ( ! $self->pid_file ) {
