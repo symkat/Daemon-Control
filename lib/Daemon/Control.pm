@@ -1,7 +1,6 @@
 package Daemon::Control;
 use warnings;
 use strict;
-use vars qw| $AUTOLOAD |;
 use POSIX qw| _exit setsid setuid setgid getuid getgid |;
 use File::Spec;
 
