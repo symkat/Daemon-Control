@@ -24,7 +24,6 @@ for my $method ( @accessors ) {
     };
     {
         no strict 'refs';
-        no warnings 'redefine';
         *$method = $accessor;
     }
 }
