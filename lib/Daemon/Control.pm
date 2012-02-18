@@ -216,13 +216,10 @@ sub do_stop {
 
     $self->read_pid;
     if ( $self->pid && $self->pid_running ) {
-        my $tried = 0;
-        while ( $self->pid_running ) {
-            kill INT => $self->pid if $tried == 0;
-            kill TERM => $self->pid if $tried == 1 or $tried == 2;
-            kill KILL => $self->pid if $tried == 3;
-            $tried++;
+        foreach my $signal ( qw(INT TERM TERM KILL) ) {
+            kill $signal => $self->pid;
             sleep 1;
+            last unless $self->pid_running;
         }
         if ( $self->pid_running ) {
             $self->pretty_print( "Failed to Stop", "red" );
