@@ -88,14 +88,14 @@ sub _double_fork {
                         . join( " ", @{$self->program_args} ) . ": $!";
             }
         } elsif ( not defined $new_pid ) {
-            print STDERR "Cannot fork.\n";
+            print STDERR "Cannot fork: $!\n";
         } else {
             $self->pid( $new_pid );
             $self->write_pid;
             _exit 0;
         }
     } elsif ( not defined $pid ) { # We couldn't fork.  =(
-        print STDERR "Cannot fork.\n";
+        print STDERR "Cannot fork: $!\n";
     } else { # In the parent, $pid = child's PID, return it.
         waitpid( $pid, 0 );
     }
@@ -116,7 +116,7 @@ sub _fork {
         }
         _exit 0;
     } elsif ( not defined $pid ) {
-        print STDERR "Cannot fork.\n";
+        print STDERR "Cannot fork: $!\n";
     } else { # In the parent, $pid = child's PID, return it.
         $self->pid( $pid );
         $self->write_pid;
