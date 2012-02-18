@@ -114,13 +114,13 @@ sub _fork {
 sub _launch_program {
     my ($self) = @_;
     if ( ref $self->program eq 'CODE' ) {
-        $self->program->( @{$self->program_args || []} );
+        $self->program->( $self, @{$self->program_args || []} );
     } else {
         exec ( $self->program, @{$self->program_args || [ ]} )
             or die "Failed to exec " . $self->program . " " 
                 . join( " ", @{$self->program_args} ) . ": $!";
     }
-    _exit 0;
+    exit 0;
 }
 
 sub write_pid {
