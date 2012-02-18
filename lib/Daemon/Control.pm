@@ -10,11 +10,16 @@ $VERSION = eval $VERSION;
 
 my @accessors = qw| pid color_map name code program program_args 
     uid path gid scan_name stdout_file stderr_file pid_file fork data 
-    lsb_start lsb_stop lsb_sdesc lsb_desc |;
+    lsb_start lsb_stop lsb_sdesc lsb_desc redirect_before_fork        |;
 
 sub new {
     my ( $class, $args ) = @_;
-    my $self = bless { _color_map => { red => 31, green => 32 } }, $class;
+    
+    # Create the object with defaults.
+    my $self = bless { 
+        _color_map => { red => 31, green => 32 }, 
+        _redirect_before_fork => 1,
+    }, $class;
 
     for my $accessor ( @accessors ) {
         if ( exists $args->{$accessor} ) {
@@ -25,6 +30,21 @@ sub new {
         if keys( %$args );
 
     return $self;
+}
+
+sub redirect_filehandles {
+    my ( $self ) = @_;
+
+    if ( $self->stdout_file ) {
+        my $file = $self->stdout_file;
+        open STDOUT, ">>", ( $file eq '/dev/null' ? File::Spec->devnull : $file )
+            or die "Failed to open STDOUT to " . $self->stdout_file , ": $!";
+    }
+    if ( $self->stderr_file ) {
+        my $file = $self->stderr_file;
+        open STDERR, ">>", ( $file eq '/dev/null' ? File::Spec->devnull : $file )
+            or die "Failed to open STDERR to " . $self->stderr_file . ": $!";
+    }
 }
 
 sub _double_fork {
@@ -38,18 +58,14 @@ sub _double_fork {
             setgid( $self->gid ) if $self->gid;
             setuid( $self->uid ) if $self->uid;
             open( STDIN, "<", File::Spec->devnull );
-            if ( $self->stdout_file ) {
-                open STDOUT, ">>", $self->stdout_file
-                    or die "Failed to open STDOUT to " . $self->stdout_file , ": $!";
-            }
-            if ( $self->stderr_file ) {
-                open STDOUT, ">>", $self->stderr_file
-                    or die "Failed to open STDERR to " . $self->stderr_file . ": $!";
+
+            if ( $self->redirect_before_fork ) {
+                $self->redirect_filehandles;
             }
 
             # New Program Stuff.
             if ( ref $self->program eq 'CODE' ) {
-                $self->program->( @{$self->program_args || []} );
+                $self->program->( $self, @{$self->program_args || []} );
             } else {
                 exec ( $self->program, @{$self->program_args || [ ]} )
                     or die "Failed to exec " . $self->program . " " 
@@ -83,6 +99,8 @@ sub _fork {
                     . join( " ", @{$self->program_args} ) . ": $!";
         }
         _exit 0;
+    } elsif ( not defined $pid ) {
+        print STDERR "Cannot fork.\n";
     } else { # In the parent, $pid = child's PID, return it.
         $self->pid( $pid );
         $self->write_pid;
@@ -156,14 +174,27 @@ sub do_start {
         exit 1;
     }
 
-    if ( ! $self->fork ) {
-        warn "Defaulting to fork ( set fork => 1, or fork => 2 )";
-        $self->_fork;
-    } else {
-        $self->_double_fork if $self->fork == 2;
-        $self->_fork if $self->fork == 1;
-    }
+    $self->fork( 2 ) unless $self->fork;
+    $self->_double_fork if $self->fork == 2;
+    $self->_fork if $self->fork == 1;
     $self->pretty_print( "Started" );
+}
+
+sub do_show_warnings {
+    my ( $self ) = @_;
+    
+    if ( ! $self->fork ) {
+        print STDERR "Fork undefined.  Defaulting to fork => 2.";
+    }
+
+    if ( ! $self->stdout_file ) {
+        print STDERR "stdout_file undefined.  Will not redirect file handle.";    
+    }
+    
+    if ( ! $self->stderr_file ) {
+        print STDERR "stderr_file undefined.  Will not redirect file handle.";    
+    }
+    
 }
 
 sub do_stop {
@@ -272,18 +303,13 @@ sub run {
    
     # Error Checking.
     if ( ( ! $self->code ) && ( ! $self->program ) ) {
-        warn "Error: code or program MUST be defined.";
-        exit 1;
+        die "Error: program must be defined.";
     }
     if ( ! $self->pid_file ) {
-        warn "Error: pid_file MUST be defined.";
-        exit 1;
-    }
-    if ( ( ! $self->stdout_file ) || ( ! $self->stderr_file ) ) {
-        warn "Warning: stdout_file and stderr_file not set.  Will not reopen to new files.";
+        die "Error: pid_file must be defined.";
     }
     if ( ! $self->name ) {
-        warn "Error: name MUST be defined.";
+        die "Error: name must be defined.";
     }
 
     my $called_with = shift @ARGV if @ARGV;
@@ -292,11 +318,9 @@ sub run {
     if ( $self->can($action) ) {
         $self->$action;
     } elsif ( ! $called_with  ) {
-        warn "Must be called with an action [start|stop|restart|status]";
-        exit 1;
+        die "Must be called with an action [start|stop|restart|status|show_warnings]";
     } else {
-        warn "Error: I don't know how to $called_with.";
-        exit 1;
+        die "Error: undefined action $called_with";
     }
     exit 0;
 }

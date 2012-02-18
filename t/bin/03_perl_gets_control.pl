@@ -11,9 +11,14 @@ Daemon::Control->new({
     lsb_desc    => 'My Daemon controls the My Daemon daemon.',
     path        => '/usr/sbin/mydaemon/init.pl',
 
-    program     => sub { sleep $_[1] },
-    program_args => [ 10 ],
+    program     => sub { 
+        if ( ref $_[0] ne 'Daemon::Control' ) {
+            print "FAILED\n";
+        }
+    },
+    program_args => [ ],
 
+    redirect_before_fork => 0,
     pid_file    => '/dev/null', # I don't want to leave tmp files for testing.
     stderr_file => '/dev/null',
     stdout_file => '/dev/null',

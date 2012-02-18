@@ -1,2 +1,14 @@
-0.1.0 2012-02-12 SymKat <symkat@symkat.com>
+0.0.2 2012-18-12 SymKat <symkat@symkat.com>
+    * Default fork mode changed to double.
+    * Added show_warnings command instead of alerting
+      about DWIM actions.
+    * Fatal warnings changed from warn+exit to die (exits non-zero)
+    * _fork handles undef/cannot fork.
+    * $self->redirect_filehandles added
+    * redirect_before_fork added (default 1)
+    * With a code ref, $self is passed (can $control->redriect_filehandles)
+
+
+
+0.0.1 2012-02-12 SymKat <symkat@symkat.com>
     * Inital Commit
