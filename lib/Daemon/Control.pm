@@ -14,6 +14,21 @@ my @accessors = qw(
     lsb_start lsb_stop lsb_sdesc lsb_desc redirect_before_fork
 );
 
+# Accessor building
+
+for my $method ( @accessors ) {
+    my $accessor = sub {
+        my $self = shift;
+        $self->{$method} = shift if @_;
+        return $self->{$method};
+    };
+    {
+        no strict 'refs';
+        no warnings 'redefine';
+        *$method = $accessor;
+    }
+}
+
 sub new {
     my ( $class, $args ) = @_;
     
@@ -249,21 +264,6 @@ sub do_status {
 
 sub do_get_init_file {
     shift->dump_init_script;
-}
-
-# Magically create the accessors.
-
-for my $method ( @accessors ) {
-    my $accessor = sub {
-        my $self = shift;
-        $self->{$method} = shift if @_;
-        return $self->{$method};
-    };
-    {
-        no strict 'refs';
-        no warnings 'redefine';
-        *$method = $accessor;
-    }
 }
 
 sub dump_init_script {
