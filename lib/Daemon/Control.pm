@@ -8,9 +8,11 @@ use File::Spec;
 our $VERSION = '0.001000'; # 0.1.0
 $VERSION = eval $VERSION;
 
-my @accessors = qw| pid color_map name code program program_args 
+my @accessors = qw(
+    pid color_map name code program program_args 
     uid path gid scan_name stdout_file stderr_file pid_file fork data 
-    lsb_start lsb_stop lsb_sdesc lsb_desc redirect_before_fork        |;
+    lsb_start lsb_stop lsb_sdesc lsb_desc redirect_before_fork
+);
 
 sub new {
     my ( $class, $args ) = @_;
