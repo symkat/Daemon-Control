@@ -1,7 +1,8 @@
 package Daemon::Control;
-use warnings;
+
 use strict;
-use POSIX qw| _exit setsid setuid setgid getuid getgid |;
+use warnings;
+use POSIX qw(_exit setsid setuid setgid getuid getgid);
 use File::Spec;
 
 our $VERSION = '0.001000'; # 0.1.0
