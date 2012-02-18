@@ -42,7 +42,7 @@ sub new {
             $self->{$accessor} = delete $args->{$accessor};
         }
     }
-    die "Unknown arguments to the constructure: " . join( " ", keys %$args )
+    die "Unknown arguments to the constructor: " . join( " ", keys %$args )
         if keys( %$args );
 
     return $self;
