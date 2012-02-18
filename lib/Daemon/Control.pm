@@ -79,14 +79,7 @@ sub _double_fork {
                 $self->redirect_filehandles;
             }
 
-            # New Program Stuff.
-            if ( ref $self->program eq 'CODE' ) {
-                $self->program->( $self, @{$self->program_args || []} );
-            } else {
-                exec ( $self->program, @{$self->program_args || [ ]} )
-                    or die "Failed to exec " . $self->program . " " 
-                        . join( " ", @{$self->program_args} ) . ": $!";
-            }
+            $self->_launch_program;
         } elsif ( not defined $new_pid ) {
             print STDERR "Cannot fork: $!\n";
         } else {
@@ -107,14 +100,7 @@ sub _fork {
     my $pid = fork();
 
     if ( $pid == 0 ) { # Child, launch the process here.
-        if ( ref $self->program eq 'CODE' ) {
-            $self->program->( @{$self->program_args || []} );
-        } else {
-            exec ( $self->program, @{$self->program_args || [ ]} )
-                or die "Failed to exec " . $self->program . " " 
-                    . join( " ", @{$self->program_args} ) . ": $!";
-        }
-        _exit 0;
+        $self->_launch_program;
     } elsif ( not defined $pid ) {
         print STDERR "Cannot fork: $!\n";
     } else { # In the parent, $pid = child's PID, return it.
@@ -123,6 +109,18 @@ sub _fork {
         #waitpid( $pid, 0 );
     }
     return $self;
+}
+
+sub _launch_program {
+    my ($self) = @_;
+    if ( ref $self->program eq 'CODE' ) {
+        $self->program->( @{$self->program_args || []} );
+    } else {
+        exec ( $self->program, @{$self->program_args || [ ]} )
+            or die "Failed to exec " . $self->program . " " 
+                . join( " ", @{$self->program_args} ) . ": $!";
+    }
+    _exit 0;
 }
 
 sub write_pid {
