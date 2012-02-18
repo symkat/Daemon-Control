@@ -5,7 +5,7 @@ use warnings;
 use POSIX qw(_exit setsid setuid setgid getuid getgid);
 use File::Spec;
 
-our $VERSION = '0.001000'; # 0.1.0
+our $VERSION = '0.000004'; # 0.0.4
 $VERSION = eval $VERSION;
 
 my @accessors = qw(

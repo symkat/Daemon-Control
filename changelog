@@ -1,3 +1,8 @@
+0.0.4 2012-18-12 SymKat <symkat@symkat.com>
+    * First release to cpan.
+    * Refactoring and review by Matt S. Trout
+    * I really changed the version this time!
+
 0.0.3 2012-18-12 SymKat <symkat@symkat.com>
     * Test added for show_warnings.
     * Documentation updated for 0.0.2 changes.
