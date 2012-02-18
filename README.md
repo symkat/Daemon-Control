@@ -67,12 +67,12 @@ $daemon->program( sub { ... } );
 
 $daemon->program( "/usr/sbin/http" );
 
-
-
 ## program_args
 
 This is an array ref of the arguments for the program.  In the context
-of a coderef being executed this will be given to the coderef as @_;
+of a coderef being executed this will be given to the coderef as @_,
+the Daemon::Control instance that called the coderef will be passed
+as the first arguments.  Your arguments start at $_[1].
 
 In the context of a shell program, it will be given as arguments to
 be executed.
@@ -103,6 +103,16 @@ The path of the script you are using Daemon::Control in.  This will be used in
 the LSB file genration to point it to the location of the script.  If this is
 not provided $0 will be used, which is likely to work only if you use the full
 path to execute it when asking for the init script.
+
+## redirect_before_fork
+
+By default this is set true.  STDOUT will be redirected to stdout_file,
+STDERR will be redirected to stderr_file.  Setting this to 0 will disable
+redriecting before a double fork.  This is useful when you are using a code
+ref and would like to leave the file handles alone until you're in control.
+
+Call ->redirect_filehandles on the Daemon::Control instance your coderef is
+passed to redirect the filehandles.
 
 ## stdout_file
 
