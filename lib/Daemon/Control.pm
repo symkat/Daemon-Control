@@ -19,13 +19,13 @@ sub new {
     
     # Create the object with defaults.
     my $self = bless { 
-        _color_map => { red => 31, green => 32 }, 
-        _redirect_before_fork => 1,
+        color_map => { red => 31, green => 32 }, 
+        redirect_before_fork => 1,
     }, $class;
 
     for my $accessor ( @accessors ) {
         if ( exists $args->{$accessor} ) {
-            $self->{"_$accessor"} = delete $args->{$accessor};
+            $self->{$accessor} = delete $args->{$accessor};
         }
     }
     die "Unknown arguments to the constructure: " . join( " ", keys %$args )
@@ -256,8 +256,8 @@ sub do_get_init_file {
 for my $method ( @accessors ) {
     my $accessor = sub {
         my $self = shift;
-        $self->{"_$method"} = shift if @_;
-        return $self->{"_$method"};
+        $self->{$method} = shift if @_;
+        return $self->{$method};
     };
     {
         no strict 'refs';
