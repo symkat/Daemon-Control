@@ -617,7 +617,7 @@ SymKat I<E<lt>symkat@symkat.comE<gt>> ( Blog: L<http://symkat.com/> )
 
 =head2 CONTRIBUTORS
 
-Matt S. Trout (mst) I<E<lt>mst@mst@shadowcat.co.ukE<gt>>
+Matt S. Trout (mst) I<E<lt>mst@shadowcat.co.ukE<gt>>
 
 =head1 COPYRIGHT
 
