@@ -177,7 +177,7 @@ sub do_start {
 
     # Make sure the PID file exists.
     if ( ! -f $self->pid_file ) {
-        $self->pid( "_" ); # Make PID invalid.
+        $self->pid( 0 ); # Make PID invalid.
         $self->write_pid();
     }
     
