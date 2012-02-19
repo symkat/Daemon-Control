@@ -1,3 +1,8 @@
+0.0.5 2012-18-12 SymKat <symkat@symkat.com>
+    * Fixed an issue with the inital PID being invalid.
+    * Added directory accessor to support chdir before exec.
+    * Minor documentation changes
+
 0.0.4 2012-18-12 SymKat <symkat@symkat.com>
     * First release to cpan.
     * Refactoring and review by Matt S. Trout

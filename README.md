@@ -49,9 +49,9 @@ You can also make an LSB compatable init script:
 
     /home/symkat/etc/init.d/program get_init_file > /etc/init.d/program
 
-# CONSTRUCTURE
+# CONSTRUCTOR
 
-The constucture takes the following arguments.
+The constuctor takes the following arguments.
 
 ## name
 
@@ -96,6 +96,10 @@ ONLY supported in double-fork mode and will only work if you are running
 as root.  This takes the numerical GID ( grep group /etc/groups )
 
 $daemon->gid( 1001 );
+
+## directory
+
+If provided, chdir to this directory before execution.
 
 ## path
 
@@ -270,7 +274,7 @@ SymKat _<symkat@symkat.com>_ ( Blog: [http://symkat.com/](http://symkat.com/) )
 
 ## CONTRIBUTORS
 
-Matt S. Trout (mst) _<mst@mst@shadowcat.co.uk>_
+Matt S. Trout (mst) _<mst@shadowcat.co.uk>_
 
 # COPYRIGHT
 

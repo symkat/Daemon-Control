@@ -5,11 +5,11 @@ use warnings;
 use POSIX qw(_exit setsid setuid setgid getuid getgid);
 use File::Spec;
 
-our $VERSION = '0.000004'; # 0.0.4
+our $VERSION = '0.000005'; # 0.0.5
 $VERSION = eval $VERSION;
 
 my @accessors = qw(
-    pid color_map name program program_args 
+    pid color_map name program program_args directory
     uid path gid scan_name stdout_file stderr_file pid_file fork data 
     lsb_start lsb_stop lsb_sdesc lsb_desc redirect_before_fork
 );
@@ -113,6 +113,9 @@ sub _fork {
 
 sub _launch_program {
     my ($self) = @_;
+    
+    chdir( $self->directory ) if $self->directory;
+
     if ( ref $self->program eq 'CODE' ) {
         $self->program->( $self, @{$self->program_args || []} );
     } else {
@@ -397,9 +400,9 @@ You can also make an LSB compatable init script:
 
     /home/symkat/etc/init.d/program get_init_file > /etc/init.d/program
 
-=head1 CONSTRUCTURE
+=head1 CONSTRUCTOR
 
-The constucture takes the following arguments.
+The constuctor takes the following arguments.
 
 =head2 name
 
@@ -444,6 +447,10 @@ ONLY supported in double-fork mode and will only work if you are running
 as root.  This takes the numerical GID ( grep group /etc/groups )
 
 $daemon->gid( 1001 );
+
+=head2 directory
+
+If provided, chdir to this directory before execution.
 
 =head2 path
 
