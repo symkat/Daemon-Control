@@ -274,12 +274,12 @@ sub dump_init_script {
     $self->data( $self->run_template(
         $self->data,
         {
-            NAME                => $self->name,
-            REQUIRED_START      => $self->lsb_start,
-            REQUIRED_STOP       => $self->lsb_stop,
-            SHORT_DESCRIPTION   => $self->lsb_sdesc,
-            DESCRIPTION         => $self->lsb_desc,
-            SCRIPT              => $self->path ? $self->path : $0,
+            NAME              => $self->name      ? $self->name      : "",
+            REQUIRED_START    => $self->lsb_start ? $self->lsb_start : "",
+            REQUIRED_STOP     => $self->lsb_stop  ? $self->lsb_stop  : "",
+            SHORT_DESCRIPTION => $self->lsb_sdesc ? $self->lsb_sdesc : "",
+            DESCRIPTION       => $self->lsb_desc  ? $self->lsb_desc  : "",
+            SCRIPT            => $self->path      ? $self->path      : $0,
         }
     ));
     print $self->data;
