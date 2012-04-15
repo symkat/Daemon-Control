@@ -43,6 +43,12 @@ sub new {
             $self->{$accessor} = delete $args->{$accessor};
         }
     }
+    # Get numeric uid/gid if we were given strings
+    $self->{uid} = scalar getpwnam($self->{uid})
+        if $self->{uid} and $self->{uid} =~ /[a-z]/;
+    $self->{gid} = scalar getgrnam($self->{gid})
+        if $self->{gid} and $self->{gid} =~ /[a-z]/;
+
     die "Unknown arguments to the constructor: " . join( " ", keys %$args )
         if keys( %$args );
 
@@ -484,17 +490,19 @@ $daemon->program_args( [ '--switch', 'argument' ] );
 
 If provided, the UID that the program will drop to when forked.  This is
 ONLY supported in double-fork mode and will only work if you are running
-as root.  This takes the numerical UID (grep user /etc/passwd )
+as root. Accepts numeric UID, or finds it if given a username as a string.
 
 $daemon->uid( 1001 );
+$daemon->uid('www-data');
 
 =head2 gid
 
 If provided, the GID that the program will drop to when forked.  This is
 ONLY supported in double-fork mode and will only work if you are running
-as root.  This takes the numerical GID ( grep group /etc/groups )
+as root. Accepts numeric GID, or finds it if given a group name as a string.
 
 $daemon->gid( 1001 );
+$daemon->gid('www-data');
 
 =head2 directory
 
