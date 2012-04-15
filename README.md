@@ -8,7 +8,7 @@ Daemon::Control provides a library for creating init scripts in perl.
 Your perl script just needs to set the accessors for what and how you
 want something to run and the library takes care of the rest.
 
-You can launch programs through the shell (/usr/sbin/my_program) or
+You can launch programs through the shell (/usr/sbin/my\_program) or
 launch Perl code itself into a daemon mode.  Single and double fork
 methods are supported and in double-fork mode all the things you would
 expect like reopening STDOUT/STDERR, switching UID/GID are supported.
@@ -56,7 +56,7 @@ The constuctor takes the following arguments.
 ## name
 
 The name of the program the daemon is controlling.  This will be used in
-status messages "name [Started]" and the name for the LSB init script
+status messages "name \[Started\]" and the name for the LSB init script
 that is generated.
 
 ## program
@@ -67,35 +67,37 @@ $daemon->program( sub { ... } );
 
 $daemon->program( "/usr/sbin/http" );
 
-## program_args
+## program\_args
 
 This is an array ref of the arguments for the program.  In the context
-of a coderef being executed this will be given to the coderef as @_,
+of a coderef being executed this will be given to the coderef as @\_,
 the Daemon::Control instance that called the coderef will be passed
-as the first arguments.  Your arguments start at $_[1].
+as the first arguments.  Your arguments start at $\_\[1\].
 
 In the context of a shell program, it will be given as arguments to
 be executed.
 
-$daemon->program_args( [ 'foo', 'bar' ] );
+$daemon->program\_args( \[ 'foo', 'bar' \] );
 
-$daemon->program_args( [ '--switch', 'argument' ] );
+$daemon->program\_args( \[ '--switch', 'argument' \] );
 
 ## uid
 
 If provided, the UID that the program will drop to when forked.  This is
 ONLY supported in double-fork mode and will only work if you are running
-as root.  This takes the numerical UID (grep user /etc/passwd )
+as root. Accepts numeric UID, or finds it if given a username as a string.
 
 $daemon->uid( 1001 );
+$daemon->uid('www-data');
 
 ## gid
 
 If provided, the GID that the program will drop to when forked.  This is
 ONLY supported in double-fork mode and will only work if you are running
-as root.  This takes the numerical GID ( grep group /etc/groups )
+as root. Accepts numeric GID, or finds it if given a group name as a string.
 
 $daemon->gid( 1001 );
+$daemon->gid('www-data');
 
 ## directory
 
@@ -108,44 +110,52 @@ the LSB file genration to point it to the location of the script.  If this is
 not provided $0 will be used, which is likely to work only if you use the full
 path to execute it when asking for the init script.
 
-## redirect_before_fork
+## init\_config
 
-By default this is set true.  STDOUT will be redirected to stdout_file,
-STDERR will be redirected to stderr_file.  Setting this to 0 will disable
+The name of the init config file to load.  When provided your init script will
+source this file to include the environment variables.  This is useful for setting
+a PERL5LIB and such things.
+
+$daemon->init\_config( "/etc/default/my\_program" );
+
+## redirect\_before\_fork
+
+By default this is set true.  STDOUT will be redirected to stdout\_file,
+STDERR will be redirected to stderr\_file.  Setting this to 0 will disable
 redriecting before a double fork.  This is useful when you are using a code
 ref and would like to leave the file handles alone until you're in control.
 
-Call ->redirect_filehandles on the Daemon::Control instance your coderef is
+Call ->redirect\_filehandles on the Daemon::Control instance your coderef is
 passed to redirect the filehandles.
 
-## stdout_file
+## stdout\_file
 
 If provided stdout will be redirected to the given file.  This is only supported
 in double fork more.
 
-$daemon->stdout_file( "/tmp/mydaemon.stdout" );
+$daemon->stdout\_file( "/tmp/mydaemon.stdout" );
 
-## stderr_file
+## stderr\_file
 
 If provided stderr will be redirected to the given file.  This is only supported
 in double fork more.
 
-$daemon->stderr_file( "/tmp/mydaemon.stderr" );
+$daemon->stderr\_file( "/tmp/mydaemon.stderr" );
 
-## pid_file
+## pid\_file
 
 The location of the PID file to use.  Warning: if using single-fork mode, it is
 recommended to set this to the file which the daemon launching in single-fork
 mode will put it's PID.  Failure to follow this will most likely result in status,
 stop, and restart not working.
 
-$daemon->pid_file( "/tmp/mydaemon.pid" );
+$daemon->pid\_file( "/tmp/mydaemon.pid" );
 
 ## fork
 
 The mode to use for fork.  By default a double-fork will be used.
 
-In double-fork, uid, gid, std*_file, and a number of other things are
+In double-fork, uid, gid, std\*\_file, and a number of other things are
 supported.  A traditional double-fork is used and setsid is called.
 
 In single-fork none of the above are called, and it is the responsiblity
@@ -156,50 +166,50 @@ file should be set to whatever PID file is used by the daemon.
 
 $daemon->fork( 1 );
 
-$daemon->fork( 2 ); # Default
+$daemon->fork( 2 ); \# Default
 
-## scan_name
+## scan\_name
 
 This provides an extra check to see if the program is running.  Normally
 we only check that the PID listed in the PID file is running.  When given
 a regular expression, we will also match the name of the program as shown
 in ps.
 
-$daemon->scan_name( qr|mydaemon| );
+$daemon->scan\_name( qr|mydaemon| );
 
-## lsb_start
+## lsb\_start
 
 The value of this string is used for the 'Required-Start' value of
 the generated LSB init script.  See [http://wiki.debian.org/LSBInitScripts](http://wiki.debian.org/LSBInitScripts)
 for more information.
 
-$daemon->lsb_start( '$remote_fs $syslog' );
+$daemon->lsb\_start( '$remote\_fs $syslog' );
 
-## lsb_stop
+## lsb\_stop
 
 The value of this string is used for the 'Required-Stop' value of
 the generated LSB init script.  See [http://wiki.debian.org/LSBInitScripts](http://wiki.debian.org/LSBInitScripts)
 for more information.
 
-$daemon->lsb_stop( '$remote_fs $syslog' );
+$daemon->lsb\_stop( '$remote\_fs $syslog' );
 
-## lsb_sdesc
+## lsb\_sdesc
 
 The value of this string is used for the 'Short-Description' value of
 the generated LSB init script.  See [http://wiki.debian.org/LSBInitScripts](http://wiki.debian.org/LSBInitScripts)
 for more information.
 
-$daemon->lsb_sdesc( 'Mah program...' );
+$daemon->lsb\_sdesc( 'Mah program...' );
 
 
 
-## lsb_desc
+## lsb\_desc
 
 The value of this string is used for the 'Description' value of
 the generated LSB init script.  See [http://wiki.debian.org/LSBInitScripts](http://wiki.debian.org/LSBInitScripts)
 for more information.
 
-$daemon->lsb_desc( 'My program controls a thing that does a thing.' );
+$daemon->lsb\_desc( 'My program controls a thing that does a thing.' );
 
 # METHODS
 
@@ -210,63 +220,63 @@ the command line.  Run will exit either 1 or 0, following LSB files on
 exiting.  As such no code should be used after ->run is called.  Any code
 in your file should be before this.
 
-## do_start
+## do\_start
 
 Is called when start is given as an argument.  Starts the forking, and
 exits.
 
-/usr/bin/my_program_launcher.pl start
+/usr/bin/my\_program\_launcher.pl start
 
-## do_stop
+## do\_stop
 
 Is called when stop is given as an argument.  Stops the running program
 if it can.
 
-/usr/bin/my_program_launcher.pl stop
+/usr/bin/my\_program\_launcher.pl stop
 
-## do_restart
+## do\_restart
 
-Is called when restart is given as an argument.  Calls do_stop and do_start.
+Is called when restart is given as an argument.  Calls do\_stop and do\_start.
 
-/usr/bin/my_program_launcher.pl restart
+/usr/bin/my\_program\_launcher.pl restart
 
-## do_status
+## do\_status
 
 Is called when status is given as an argument.  Displays the status of the
 program, basic on the PID file.
 
-/usr/bin/my_program_launcher.pl status
+/usr/bin/my\_program\_launcher.pl status
 
-## do_get_init_file
+## do\_get\_init\_file
 
-Is called when get_init_file is given as an argument.  Dumps an LSB
+Is called when get\_init\_file is given as an argument.  Dumps an LSB
 compatable init file, for use in /etc/init.d/
 
-/usr/bin/my_program_launcher.pl get_init_file
+/usr/bin/my\_program\_launcher.pl get\_init\_file
 
-## pretty_print
+## pretty\_print
 
 This is used to display status to the user.  It accepts a message, and a color.
 It will default to green text, if no color is explictly given.  Only supports
 red and green.
 
-$daemon->pretty_print( "My Status", "red" );
+$daemon->pretty\_print( "My Status", "red" );
 
-## write_pid
+## write\_pid
 
-This will write the PID to the file in pid_file.
+This will write the PID to the file in pid\_file.
 
-## read_pid
+## read\_pid
 
-This will read the PID from the file in pid_file and set it in pid.
+This will read the PID from the file in pid\_file and set it in pid.
 
 ## pid
 
-An accessor for the PID.  Set by read_pid, or when the program is started.
+An accessor for the PID.  Set by read\_pid, or when the program is started.
 
-## dump_init_script
+## dump\_init\_script
 
-A function to dump the LSB compatable init script.  Used by do_get_init_file.
+A function to dump the LSB compatable init script.  Used by do\_get\_init\_file.
 
 # AUTHOR
 
@@ -274,7 +284,8 @@ SymKat _<symkat@symkat.com>_ ( Blog: [http://symkat.com/](http://symkat.com/) )
 
 ## CONTRIBUTORS
 
-Matt S. Trout (mst) _<mst@shadowcat.co.uk>_
+- Matt S. Trout (mst) \_<mst@shadowcat.co.uk>\_
+- Mike Doherty (doherty) \_<doherty@cpan.org>\_
 
 # COPYRIGHT
 

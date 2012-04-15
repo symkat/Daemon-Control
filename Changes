@@ -1,3 +1,12 @@
+0.0.6 2012-15-04 SymKat <symkat@symkat.com>
+    * PID file will be deleted on do_stop
+    * PID file will be created by the target user when ->uid set
+    * uid() and gid() now take strings as well (doherty)
+    * Kill signal order changed to TERM TERM INT KILL
+    * init_config option added, gives LSB script a file to source.
+    * Typo fixes
+    * Mike Doherty (doherty) added to contrib (Thank you!)
+
 0.0.5 2012-18-02 SymKat <symkat@symkat.com>
     * Fixed an issue with the inital PID being invalid.
     * Added directory accessor to support chdir before exec.
