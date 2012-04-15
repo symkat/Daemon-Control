@@ -1,19 +1,19 @@
-0.0.5 2012-18-12 SymKat <symkat@symkat.com>
+0.0.5 2012-18-02 SymKat <symkat@symkat.com>
     * Fixed an issue with the inital PID being invalid.
     * Added directory accessor to support chdir before exec.
     * Minor documentation changes
 
-0.0.4 2012-18-12 SymKat <symkat@symkat.com>
+0.0.4 2012-18-02 SymKat <symkat@symkat.com>
     * First release to cpan.
     * Refactoring and review by Matt S. Trout
     * I really changed the version this time!
 
-0.0.3 2012-18-12 SymKat <symkat@symkat.com>
+0.0.3 2012-18-02 SymKat <symkat@symkat.com>
     * Test added for show_warnings.
     * Documentation updated for 0.0.2 changes.
     * Version changed this time.
 
-0.0.2 2012-18-12 SymKat <symkat@symkat.com>
+0.0.2 2012-18-02 SymKat <symkat@symkat.com>
     * Default fork mode changed to double.
     * Added show_warnings command instead of alerting
       about DWIM actions.
@@ -23,5 +23,5 @@
     * redirect_before_fork added (default 1)
     * With a code ref, $self is passed (can $control->redriect_filehandles)
 
-0.0.1 2012-02-12 SymKat <symkat@symkat.com>
+0.0.1 2012-02-02 SymKat <symkat@symkat.com>
     * Inital Commit
