@@ -712,7 +712,13 @@ SymKat I<E<lt>symkat@symkat.comE<gt>> ( Blog: L<http://symkat.com/> )
 
 =head2 CONTRIBUTORS
 
-Matt S. Trout (mst) I<E<lt>mst@shadowcat.co.ukE<gt>>
+=over 4
+
+=item * Matt S. Trout (mst) I<E<lt>mst@shadowcat.co.ukE<gt>>
+
+=item * Mike Doherty (doherty) I<E<lt>doherty@cpan.orgE<gt>>
+
+=back
 
 =head1 COPYRIGHT
 
