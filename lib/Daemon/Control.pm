@@ -129,6 +129,33 @@ sub _launch_program {
 
 sub write_pid {
     my ( $self ) = @_;
+
+    # We're going to fork a process to do this,
+    # and change our UID/GID to the target.  This
+    # should prevent the issue of creating a PID file
+    # as root and then moving our permissions down and
+    # failing to read it.
+    
+    if ( $self->uid ) {
+        my $session = fork();
+        if ( $session == 0 ) {
+            setuid($self->uid);
+            setgid($self->gid);
+            $self->_write_pid;
+            _exit 0;
+        } elsif ( not defined $session ) {
+            print STDERR "Cannot fork to write PID: $!\n";
+        } else {
+            #waitpid($session, 0);
+            # Let the parent do nothing.
+        }
+    } else {
+        $self->_write_pid;
+    }
+}
+
+sub _write_pid {
+    my ( $self ) = @_;
     open my $sf, ">", $self->pid_file
         or die "Failed to write " . $self->pid_file . ": $!";
     print $sf $self->pid;
@@ -138,6 +165,15 @@ sub write_pid {
 
 sub read_pid {
     my ( $self ) = @_;
+
+    # If we don't have a PID file, we're going to set it
+    # to 0 -- this will prevent killing normal processes,
+    # and make is_running return false.
+    if ( ! -f $self->pid_file ) {
+        $self->pid( 0 );
+        return 0;
+    }
+
     open my $lf, "<", $self->pid_file 
         or die "Failed to read " . $self->pid_file . ": $!";
     my $pid = do { local $/; <$lf> };
@@ -219,6 +255,7 @@ sub do_stop {
     my ( $self ) = @_;
 
     $self->read_pid;
+
     if ( $self->pid && $self->pid_running ) {
         foreach my $signal ( qw(TERM TERM INT KILL) ) {
             kill $signal => $self->pid;
