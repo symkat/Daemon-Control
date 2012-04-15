@@ -43,16 +43,40 @@ sub new {
             $self->{$accessor} = delete $args->{$accessor};
         }
     }
+
     # Get numeric uid/gid if we were given strings
-    $self->{uid} = scalar getpwnam($self->{uid})
-        if $self->{uid} and $self->{uid} =~ /[a-z]/;
-    $self->{gid} = scalar getgrnam($self->{gid})
-        if $self->{gid} and $self->{gid} =~ /[a-z]/;
+    $self->_resolve_guid_strings;
 
     die "Unknown arguments to the constructor: " . join( " ", keys %$args )
         if keys( %$args );
 
     return $self;
+}
+
+# Given a ->uid or ->gid with strings, locate the
+# current uid/gid number for the user/group.
+#
+# Dies on failure.
+sub _resolve_guid_strings {
+    my ( $self ) = @_;
+
+    if ( $self->uid && $self->uid =~ /[a-z]/ ) {
+        my $uid = getpwnam( $self->uid );
+
+        die "Error: Couldn't get a UID for " . $self->uid . ", user exists?"
+            unless $uid;
+
+        $self->uid( $uid );
+    }
+    
+    if ( $self->gid && $self->gid =~ /[a-z]/ ) {
+        my $gid = getgrnam( $self->gid );
+
+        die "Error: Couldn't get a GID for " . $self->gid . ", group exists?"
+            unless $gid;
+
+        $self->gid( $gid );
+    }
 }
 
 sub redirect_filehandles {

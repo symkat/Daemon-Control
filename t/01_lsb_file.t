@@ -47,6 +47,6 @@ if [ -x /usr/sbin/mydaemon/init.pl ];
 then
     /usr/sbin/mydaemon/init.pl $1
 else
-    echo "Requred program /usr/sbin/mydaemon/init.pl not found!"
+    echo "Required program /usr/sbin/mydaemon/init.pl not found!"
     exit 1;
 fi
