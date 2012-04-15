@@ -12,7 +12,7 @@ $VERSION = eval $VERSION;
 my @accessors = qw(
     pid color_map name program program_args directory
     uid path gid scan_name stdout_file stderr_file pid_file fork data 
-    lsb_start lsb_stop lsb_sdesc lsb_desc redirect_before_fork
+    lsb_start lsb_stop lsb_sdesc lsb_desc redirect_before_fork init_config
 );
 
 # Accessor building
@@ -275,6 +275,15 @@ sub dump_init_script {
         $self->data( $data );
     }
 
+    # So, instead of expanding run_template to use a real DSL
+    # or making TT a dependancy, I'm just going to fake template
+    # IF logic.
+    my $init_source_file = $self->init_config
+        ? $self->run_template( 
+            '[ -r [% FILE %] ] && . [% FILE %]',  
+            { FILE => $self->init_config } )
+        : "";
+
     $self->data( $self->run_template(
         $self->data,
         {
@@ -284,6 +293,7 @@ sub dump_init_script {
             SHORT_DESCRIPTION => $self->lsb_sdesc ? $self->lsb_sdesc : "",
             DESCRIPTION       => $self->lsb_desc  ? $self->lsb_desc  : "",
             SCRIPT            => $self->path      ? $self->path      : $0,
+            INIT_SOURCE_FILE  => $init_source_file,
         }
     ));
     print $self->data;
@@ -340,6 +350,7 @@ __DATA__
 # Description:       [% DESCRIPTION %]
 ### END INIT INFO`
 
+[% INIT_SOURCE_FILE %]
 
 if [ -x [% SCRIPT %] ];
 then
@@ -459,6 +470,14 @@ The path of the script you are using Daemon::Control in.  This will be used in
 the LSB file genration to point it to the location of the script.  If this is
 not provided $0 will be used, which is likely to work only if you use the full
 path to execute it when asking for the init script.
+
+=head2 init_config
+
+The name of the init config file to load.  When provided your init script will
+source this file to include the environment variables.  This is useful for setting
+a PERL5LIB and such things.
+
+$daemon->init_config( "/etc/default/my_program" );
 
 =head2 redirect_before_fork
 
