@@ -14,7 +14,8 @@ Daemon::Control->new({
     program     => 'sleep',
     program_args => [ 10 ],
 
-    pid_file    => '/dev/null', # I don't want to leave tmp files for testing.
+    pid_file    => 'pid_tmp',
+
     stderr_file => '/dev/null',
     stdout_file => '/dev/null',
 

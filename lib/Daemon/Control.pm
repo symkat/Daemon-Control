@@ -230,11 +230,12 @@ sub do_stop {
             exit 1;
         }
         $self->pretty_print( "Stopped" );
-        exit 0;
     } else {
         $self->pretty_print( "Not Running", "red" );
-        exit 0;
     }
+
+    # Clean up the PID file on stop.
+    unlink($self->pid_file) if $self->pid_file; 
 }
 
 sub do_restart {
@@ -253,10 +254,8 @@ sub do_status {
 
     if ( $self->pid && $self->pid_running ) {
         $self->pretty_print( "Running" );
-        exit 0;
     } else {
         $self->pretty_print( "Not Running", "red" );
-        exit 1;
     }
 }
 

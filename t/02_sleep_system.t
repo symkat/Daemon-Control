@@ -38,4 +38,16 @@ sleep 10;
 ok $out = get_command_output( "perl -I$ilib $file status" ), "Get status of system daemon.";
 ok $out =~ /Not Running/;
 
+# Testing restart.
+ok $out = get_command_output( "perl -I$ilib $file start" ), "Started system daemon";
+ok $out =~ /Started/, "Daemon started for restarting";
+ok $out = get_command_output( "perl -I$ilib $file status" ), "Get status of system daemon.";
+ok $out =~ /Running/, "Daemon running for restarting.";
+ok $out = get_command_output( "perl -I$ilib $file restart" ), "Get status of system daemon.";
+ok $out =~ /stopped.*started/si, "Daemon restarted.";
+ok $out = get_command_output( "perl -I$ilib $file status" ), "Get status of system daemon.";
+ok $out =~ /Running/, "Daemon running after restart.";
+ok $out = get_command_output( "perl -I$ilib $file stop" ), "Get status of system daemon.";
+ok $out =~ /Stopped/, "Daemon stopped after restart.";
+
 done_testing;
