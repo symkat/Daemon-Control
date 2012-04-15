@@ -220,7 +220,7 @@ sub do_stop {
 
     $self->read_pid;
     if ( $self->pid && $self->pid_running ) {
-        foreach my $signal ( qw(INT TERM TERM KILL) ) {
+        foreach my $signal ( qw(TERM TERM INT KILL) ) {
             kill $signal => $self->pid;
             sleep 1;
             last unless $self->pid_running;
