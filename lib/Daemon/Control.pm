@@ -398,7 +398,7 @@ if [ -x [% SCRIPT %] ];
 then
     [% SCRIPT %] $1
 else
-    echo "Requred program [% SCRIPT %] not found!"
+    echo "Required program [% SCRIPT %] not found!"
     exit 1;
 fi
 __END__
