@@ -29,6 +29,32 @@ for my $method ( @accessors ) {
     }
 }
 
+# As a result of not using a real object system for
+# this, I don't get after user => sub { } style things,
+# so I'm making my own triggers for user and group.
+
+sub user {
+    my ( $self, $user ) = @_;
+
+    if ( $user ) {
+        $self->{user} = $user;
+        $self->_set_uid_from_name( $user );
+    }
+
+    return $self->{user};
+}
+
+sub group {
+    my ( $self, $group ) = @_;
+
+    if ( $group ) {
+        $self->{group} = $group;
+        $self->_set_gid_from_name( $group );
+    }
+
+    return $self->{group};
+}
+
 sub new {
     my ( $class, $args ) = @_;
     
@@ -44,8 +70,9 @@ sub new {
         }
     }
 
-    # Get numeric uid/gid if we were given strings
-    $self->_resolve_guid_strings;
+    # Set the user/groups.
+    $self->user(delete $args->{user}) if exists $args->{user};
+    $self->group(delete $args->{group}) if exists $args->{group};
 
     die "Unknown arguments to the constructor: " . join( " ", keys %$args )
         if keys( %$args );
@@ -53,30 +80,24 @@ sub new {
     return $self;
 }
 
-# Given a ->uid or ->gid with strings, locate the
-# current uid/gid number for the user/group.
-#
-# Dies on failure.
-sub _resolve_guid_strings {
-    my ( $self ) = @_;
 
-    if ( $self->uid && $self->uid =~ /[a-z]/ ) {
-        my $uid = getpwnam( $self->uid );
+# Set the uid, triggered from setting a user string.
+sub _set_uid_from_name {
+    my ( $self, $name ) = @_;
+    my $uid = getpwnam( $name );
+    die "Error: Couldn't get uid for non-existant user " . $self->user
+        unless $uid;
+    $self->uid( $uid );
+}
 
-        die "Error: Couldn't get a UID for " . $self->uid . ", user exists?"
-            unless $uid;
+# Set the uid, triggered from setting a group string.
+sub _set_gid_from_name {
+    my ( $self, $name ) = @_;
+    my $gid = getgrnam( $name );
+    die "Error: Couldn't get gid for non-existant group " . $self->group
+        unless $gid;
+    $self->gid( $gid );
 
-        $self->uid( $uid );
-    }
-    
-    if ( $self->gid && $self->gid =~ /[a-z]/ ) {
-        my $gid = getgrnam( $self->gid );
-
-        die "Error: Couldn't get a GID for " . $self->gid . ", group exists?"
-            unless $gid;
-
-        $self->gid( $gid );
-    }
 }
 
 sub redirect_filehandles {
@@ -510,23 +531,42 @@ $daemon->program_args( [ 'foo', 'bar' ] );
 
 $daemon->program_args( [ '--switch', 'argument' ] );
 
+
+=head2 user
+
+When set, the username supplied to this accessor will be used to set
+the UID attribute.  When this is used, C<uid> will be changed from
+its inital settings if you set it (which you shouldn't, since you're
+using usernames instead of UIDs).  See L</uid> for setting numerical
+user ids.
+
+$daemon->user('www-data');
+
+=head2 group
+
+When set, the groupname supplied to this accessor will be used to set
+the GID attribute.  When this is used, C<gid> will be changed from
+its inital settings if you set it (which you shouldn't, since you're
+using groupnames instead of GIDs).  See L</gid> for setting numerical
+group ids.
+
+$daemon->group('www-data');
+
 =head2 uid
 
 If provided, the UID that the program will drop to when forked.  This is
 ONLY supported in double-fork mode and will only work if you are running
-as root. Accepts numeric UID, or finds it if given a username as a string.
+as root. Accepts numeric UID.  For usernames please see L</user>.
 
 $daemon->uid( 1001 );
-$daemon->uid('www-data');
 
 =head2 gid
 
 If provided, the GID that the program will drop to when forked.  This is
 ONLY supported in double-fork mode and will only work if you are running
-as root. Accepts numeric GID, or finds it if given a group name as a string.
+as root. Accepts numeric GID, for groupnames please see L</group>.
 
 $daemon->gid( 1001 );
-$daemon->gid('www-data');
 
 =head2 directory
 
