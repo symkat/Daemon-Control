@@ -81,23 +81,43 @@ $daemon->program\_args( \[ 'foo', 'bar' \] );
 
 $daemon->program\_args( \[ '--switch', 'argument' \] );
 
+
+
+## user
+
+When set, the username supplied to this accessor will be used to set
+the UID attribute.  When this is used, `uid` will be changed from
+its inital settings if you set it (which you shouldn't, since you're
+using usernames instead of UIDs).  See ["uid"](#uid) for setting numerical
+user ids.
+
+$daemon->user('www-data');
+
+## group
+
+When set, the groupname supplied to this accessor will be used to set
+the GID attribute.  When this is used, `gid` will be changed from
+its inital settings if you set it (which you shouldn't, since you're
+using groupnames instead of GIDs).  See ["gid"](#gid) for setting numerical
+group ids.
+
+$daemon->group('www-data');
+
 ## uid
 
 If provided, the UID that the program will drop to when forked.  This is
 ONLY supported in double-fork mode and will only work if you are running
-as root. Accepts numeric UID, or finds it if given a username as a string.
+as root. Accepts numeric UID.  For usernames please see ["user"](#user).
 
 $daemon->uid( 1001 );
-$daemon->uid('www-data');
 
 ## gid
 
 If provided, the GID that the program will drop to when forked.  This is
 ONLY supported in double-fork mode and will only work if you are running
-as root. Accepts numeric GID, or finds it if given a group name as a string.
+as root. Accepts numeric GID, for groupnames please see ["group"](#group).
 
 $daemon->gid( 1001 );
-$daemon->gid('www-data');
 
 ## directory
 
