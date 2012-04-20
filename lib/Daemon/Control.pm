@@ -6,7 +6,7 @@ use POSIX qw(_exit setsid setuid setgid getuid getgid);
 use File::Spec;
 require 5.008001; # Supporting 5.8.1+
 
-our $VERSION = '0.000007'; # 0.0.6
+our $VERSION = '0.000008'; # 0.0.8
 $VERSION = eval $VERSION;
 
 my @accessors = qw(

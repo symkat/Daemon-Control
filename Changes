@@ -1,3 +1,6 @@
+0.0.8 2012-15-04 SymKat <symkat@symkat.com>
+    * Added Makefile to MANIFEST.SKIP
+
 0.0.7 2012-15-04 SymKat <symkat@symkat.com>
     * Added user and group accessors to set uid/gid based on names
     * Updated docs.
