@@ -1,4 +1,7 @@
-0.0.8 2012-15-04 SymKat <symkat@symkat.com>
+0.0.9 2012-19-04 SymKat <symkat@symkat.com>
+    * Stole Moo's MANIFEST.SKIP
+
+0.0.8 2012-19-04 SymKat <symkat@symkat.com>
     * Added Makefile to MANIFEST.SKIP
 
 0.0.7 2012-15-04 SymKat <symkat@symkat.com>
