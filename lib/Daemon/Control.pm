@@ -600,14 +600,14 @@ passed to redirect the filehandles.
 =head2 stdout_file
 
 If provided stdout will be redirected to the given file.  This is only supported
-in double fork more.
+in double fork mode.
 
 $daemon->stdout_file( "/tmp/mydaemon.stdout" );
 
 =head2 stderr_file
 
 If provided stderr will be redirected to the given file.  This is only supported
-in double fork more.
+in double fork mode.
 
 $daemon->stderr_file( "/tmp/mydaemon.stderr" );
 
@@ -615,7 +615,7 @@ $daemon->stderr_file( "/tmp/mydaemon.stderr" );
 
 The location of the PID file to use.  Warning: if using single-fork mode, it is
 recommended to set this to the file which the daemon launching in single-fork
-mode will put it's PID.  Failure to follow this will most likely result in status,
+mode will put its PID.  Failure to follow this will most likely result in status,
 stop, and restart not working.
 
 $daemon->pid_file( "/tmp/mydaemon.pid" );
@@ -630,7 +630,7 @@ supported.  A traditional double-fork is used and setsid is called.
 In single-fork none of the above are called, and it is the responsiblity
 of whatever you're forking to reopen files, associate with the init process
 and do all that fun stuff.  This mode is recommended when the program you want
-to control has it's own daemonizing code.  It is importand to note that the PID
+to control has its own daemonizing code.  It is important to note that the PID
 file should be set to whatever PID file is used by the daemon.
 
 $daemon->fork( 1 );
@@ -690,7 +690,7 @@ in your file should be before this.
 
 =head2 do_start
 
-Is called when start is given as an argument.  Starts the forking, and
+Is called when start is given as an argument.  Starts the forking and
 exits.
 
 /usr/bin/my_program_launcher.pl start
@@ -724,7 +724,7 @@ compatable init file, for use in /etc/init.d/
 
 =head2 pretty_print
 
-This is used to display status to the user.  It accepts a message, and a color.
+This is used to display status to the user.  It accepts a message and a color.
 It will default to green text, if no color is explictly given.  Only supports
 red and green.
 
