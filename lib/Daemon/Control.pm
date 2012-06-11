@@ -460,8 +460,8 @@ want something to run and the library takes care of the rest.
 
 You can launch programs through the shell (C</usr/sbin/my_program>) or
 launch Perl code itself into a daemon mode.  Single and double fork
-methods are supported and in double-fork mode all the things you would
-expect like reopening STDOUT/STDERR, switching UID/GID are supported.
+methods are supported, and in double-fork mode all the things you would
+expect such as reopening STDOUT/STDERR, switching UID/GID etc are supported.
 
 =head1 SYNOPSIS
 
@@ -495,7 +495,7 @@ You can then call the program:
 
     /home/symkat/etc/init.d/program start
 
-You can also make an LSB compatable init script:
+You can also make an LSB compatible init script:
 
     /home/symkat/etc/init.d/program get_init_file > /etc/init.d/program
 
@@ -588,10 +588,10 @@ a C<PERL5LIB> and such things.
 
 =head2 redirect_before_fork
 
-By default this is set true.  STDOUT will be redirected to stdout_file,
-STDERR will be redirected to stderr_file.  Setting this to 0 will disable
-redriecting before a double fork.  This is useful when you are using a code
-ref and would like to leave the file handles alone until you're in control.
+By default this is set to true.  STDOUT will be redirected to C<stdout_file>,
+and STDERR will be redirected to C<stderr_file>.  Setting this to 0 will disable
+redirecting before a double fork.  This is useful when you are using a code
+reference and would like to leave the filehandles alone until you're in control.
 
 Call C<->redirect_filehandles> on the Daemon::Control instance your coderef is
 passed to redirect the filehandles.
@@ -682,41 +682,42 @@ for more information.
 =head2 run
 
 This will make your program act as an init file, accepting input from
-the command line.  Run will exit either 1 or 0, following LSB files on
+the command line.  Run will exit with either 1 or 0, following LSB files on
 exiting.  As such no code should be used after ->run is called.  Any code
 in your file should be before this.
 
 =head2 do_start
 
 Is called when start is given as an argument.  Starts the forking and
-exits.
+exits. Called by:
 
     /usr/bin/my_program_launcher.pl start
 
 =head2 do_stop
 
 Is called when stop is given as an argument.  Stops the running program
-if it can.
+if it can. Called by:
 
     /usr/bin/my_program_launcher.pl stop
 
 =head2 do_restart
 
 Is called when restart is given as an argument.  Calls do_stop and do_start.
+Called by:
 
     /usr/bin/my_program_launcher.pl restart
 
 =head2 do_status
 
 Is called when status is given as an argument.  Displays the status of the
-program, basic on the PID file.
+program, basic on the PID file. Called by:
 
     /usr/bin/my_program_launcher.pl status
 
 =head2 do_get_init_file
 
 Is called when get_init_file is given as an argument.  Dumps an LSB
-compatable init file, for use in /etc/init.d/
+compatible init file, for use in /etc/init.d/. Called by:
 
     /usr/bin/my_program_launcher.pl get_init_file
 
@@ -742,7 +743,7 @@ An accessor for the PID.  Set by read_pid, or when the program is started.
 
 =head2 dump_init_script
 
-A function to dump the LSB compatable init script.  Used by do_get_init_file.
+A function to dump the LSB compatible init script.  Used by do_get_init_file.
 
 =head1 AUTHOR
 
