@@ -374,6 +374,8 @@ sub dump_init_script {
     $self->data( $self->run_template(
         $self->data,
         {
+            HEADER            => 'Generated at ' . scalar(localtime)
+                . ' with Daemon::Control ' . ($self->VERSION || 'DEV'),
             NAME              => $self->name      ? $self->name      : "",
             REQUIRED_START    => $self->lsb_start ? $self->lsb_start : "",
             REQUIRED_STOP     => $self->lsb_stop  ? $self->lsb_stop  : "",
@@ -426,6 +428,8 @@ sub run {
 
 __DATA__
 #!/bin/sh
+
+# [% HEADER %]
 
 ### BEGIN INIT INFO
 # Provides:          [% NAME %]
