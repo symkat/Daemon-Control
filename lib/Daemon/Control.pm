@@ -6,12 +6,9 @@ use POSIX qw(_exit setsid setuid setgid getuid getgid);
 use File::Spec;
 require 5.008001; # Supporting 5.8.1+
 
-our $VERSION = '0.000009'; # 0.0.9
-$VERSION = eval $VERSION;
-
 my @accessors = qw(
     pid color_map name program program_args directory
-    uid path gid scan_name stdout_file stderr_file pid_file fork data 
+    uid path gid scan_name stdout_file stderr_file pid_file fork data
     lsb_start lsb_stop lsb_sdesc lsb_desc redirect_before_fork init_config
 );
 
@@ -57,10 +54,10 @@ sub group {
 
 sub new {
     my ( $class, $args ) = @_;
-    
+
     # Create the object with defaults.
-    my $self = bless { 
-        color_map => { red => 31, green => 32 }, 
+    my $self = bless {
+        color_map => { red => 31, green => 32 },
         redirect_before_fork => 1,
     }, $class;
 
@@ -165,14 +162,14 @@ sub _fork {
 
 sub _launch_program {
     my ($self) = @_;
-    
+
     chdir( $self->directory ) if $self->directory;
 
     if ( ref $self->program eq 'CODE' ) {
         $self->program->( $self, @{$self->program_args || []} );
     } else {
         exec ( $self->program, @{$self->program_args || [ ]} )
-            or die "Failed to exec " . $self->program . " " 
+            or die "Failed to exec " . $self->program . " "
                 . join( " ", @{$self->program_args} ) . ": $!";
     }
     exit 0;
@@ -186,7 +183,7 @@ sub write_pid {
     # should prevent the issue of creating a PID file
     # as root and then moving our permissions down and
     # failing to read it.
-    
+
     if ( $self->uid ) {
         my $session = fork();
         if ( $session == 0 ) {
@@ -225,7 +222,7 @@ sub read_pid {
         return 0;
     }
 
-    open my $lf, "<", $self->pid_file 
+    open my $lf, "<", $self->pid_file
         or die "Failed to read " . $self->pid_file . ": $!";
     my $pid = do { local $/; <$lf> };
     close $lf;
@@ -271,7 +268,7 @@ sub do_start {
         $self->pid( 0 ); # Make PID invalid.
         $self->write_pid();
     }
-    
+
     # Duplicate Check
     $self->read_pid;
     if ( $self->pid && $self->pid_running ) {
@@ -287,19 +284,19 @@ sub do_start {
 
 sub do_show_warnings {
     my ( $self ) = @_;
-    
+
     if ( ! $self->fork ) {
         print STDERR "Fork undefined.  Defaulting to fork => 2.\n";
     }
 
     if ( ! $self->stdout_file ) {
-        print STDERR "stdout_file undefined.  Will not redirect file handle.\n";    
+        print STDERR "stdout_file undefined.  Will not redirect file handle.\n";
     }
-    
+
     if ( ! $self->stderr_file ) {
-        print STDERR "stderr_file undefined.  Will not redirect file handle.\n";    
+        print STDERR "stderr_file undefined.  Will not redirect file handle.\n";
     }
-    
+
 }
 
 sub do_stop {
@@ -323,7 +320,7 @@ sub do_stop {
     }
 
     # Clean up the PID file on stop.
-    unlink($self->pid_file) if $self->pid_file; 
+    unlink($self->pid_file) if $self->pid_file;
 }
 
 sub do_restart {
@@ -366,8 +363,8 @@ sub dump_init_script {
     # or making TT a dependancy, I'm just going to fake template
     # IF logic.
     my $init_source_file = $self->init_config
-        ? $self->run_template( 
-            '[ -r [% FILE %] ] && . [% FILE %]',  
+        ? $self->run_template(
+            '[ -r [% FILE %] ] && . [% FILE %]',
             { FILE => $self->init_config } )
         : "";
 
@@ -397,7 +394,7 @@ sub run_template {
 # Application Code.
 sub run {
     my ( $self ) = @_;
-   
+
     # Error Checking.
     if ( ! $self->program ) {
         die "Error: program must be defined.";
@@ -448,6 +445,8 @@ else
 fi
 __END__
 
+=for Pod::Coverage color_map data do_show_warnings new pid_running redirect_filehandles run_template
+
 =head1 NAME
 
 Daemon::Control - Create init scripts in Perl
@@ -495,13 +494,13 @@ You can then call the program:
 
     /home/symkat/etc/init.d/program start
 
-You can also make an LSB compatable init script:
+You can also make an LSB compatible init script:
 
     /home/symkat/etc/init.d/program get_init_file > /etc/init.d/program
 
 =head1 CONSTRUCTOR
 
-The constuctor takes the following arguments.
+The constructor takes the following arguments.
 
 =head2 name
 
@@ -536,7 +535,7 @@ $daemon->program_args( [ '--switch', 'argument' ] );
 
 When set, the username supplied to this accessor will be used to set
 the UID attribute.  When this is used, C<uid> will be changed from
-its inital settings if you set it (which you shouldn't, since you're
+its initial settings if you set it (which you shouldn't, since you're
 using usernames instead of UIDs).  See L</uid> for setting numerical
 user ids.
 
@@ -546,7 +545,7 @@ $daemon->user('www-data');
 
 When set, the groupname supplied to this accessor will be used to set
 the GID attribute.  When this is used, C<gid> will be changed from
-its inital settings if you set it (which you shouldn't, since you're
+its initial settings if you set it (which you shouldn't, since you're
 using groupnames instead of GIDs).  See L</gid> for setting numerical
 group ids.
 
@@ -574,8 +573,8 @@ If provided, chdir to this directory before execution.
 
 =head2 path
 
-The path of the script you are using Daemon::Control in.  This will be used in 
-the LSB file genration to point it to the location of the script.  If this is
+The path of the script you are using Daemon::Control in.  This will be used in
+the LSB file generation to point it to the location of the script.  If this is
 not provided $0 will be used, which is likely to work only if you use the full
 path to execute it when asking for the init script.
 
@@ -591,7 +590,7 @@ $daemon->init_config( "/etc/default/my_program" );
 
 By default this is set true.  STDOUT will be redirected to stdout_file,
 STDERR will be redirected to stderr_file.  Setting this to 0 will disable
-redriecting before a double fork.  This is useful when you are using a code
+redirecting before a double fork.  This is useful when you are using a code
 ref and would like to leave the file handles alone until you're in control.
 
 Call ->redirect_filehandles on the Daemon::Control instance your coderef is
@@ -627,7 +626,7 @@ The mode to use for fork.  By default a double-fork will be used.
 In double-fork, uid, gid, std*_file, and a number of other things are
 supported.  A traditional double-fork is used and setsid is called.
 
-In single-fork none of the above are called, and it is the responsiblity
+In single-fork none of the above are called, and it is the responsibility
 of whatever you're forking to reopen files, associate with the init process
 and do all that fun stuff.  This mode is recommended when the program you want
 to control has its own daemonizing code.  It is important to note that the PID
@@ -668,7 +667,7 @@ The value of this string is used for the 'Short-Description' value of
 the generated LSB init script.  See L<http://wiki.debian.org/LSBInitScripts>
 for more information.
 
-$daemon->lsb_sdesc( 'Mah program...' );
+$daemon->lsb_sdesc( 'My program...' );
 
 
 =head2 lsb_desc
@@ -718,14 +717,14 @@ program, basic on the PID file.
 =head2 do_get_init_file
 
 Is called when get_init_file is given as an argument.  Dumps an LSB
-compatable init file, for use in /etc/init.d/
+compatible init file, for use in /etc/init.d/
 
 /usr/bin/my_program_launcher.pl get_init_file
 
 =head2 pretty_print
 
 This is used to display status to the user.  It accepts a message and a color.
-It will default to green text, if no color is explictly given.  Only supports
+It will default to green text, if no color is explicitly given.  Only supports
 red and green.
 
 $daemon->pretty_print( "My Status", "red" );
@@ -744,7 +743,7 @@ An accessor for the PID.  Set by read_pid, or when the program is started.
 
 =head2 dump_init_script
 
-A function to dump the LSB compatable init script.  Used by do_get_init_file.
+A function to dump the LSB compatible init script.  Used by do_get_init_file.
 
 =head1 AUTHOR
 
@@ -764,7 +763,7 @@ SymKat I<E<lt>symkat@symkat.comE<gt>> ( Blog: L<http://symkat.com/> )
 
 Copyright (c) 2012 the Daemon::Control L</AUTHOR> and L</CONTRIBUTORS> as listed above.
 
-=head1 LICENSE 
+=head1 LICENSE
 
 This library is free software and may be distributed under the same terms as perl itself.
 

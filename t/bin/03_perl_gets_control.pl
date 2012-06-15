@@ -11,7 +11,7 @@ Daemon::Control->new({
     lsb_desc    => 'My Daemon controls the My Daemon daemon.',
     path        => '/usr/sbin/mydaemon/init.pl',
 
-    program     => sub { 
+    program     => sub {
         if ( ref $_[0] ne 'Daemon::Control' ) {
             print "FAILED\n";
         }

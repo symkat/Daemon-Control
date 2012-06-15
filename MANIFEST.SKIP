@@ -1,1 +1,0 @@
-^(?!lib/.*\.pm$|t/.*|inc/.*|xt/.*\.t$|xt/lib/.*\.pm$|(?-xism:[^/]*\.PL)$|(?-xism:Changes|MANIFEST|README|META\.yml)$|maint/(?-xism:[^.].*)$|t/.*global\-destruction\-helper\.pl$)
