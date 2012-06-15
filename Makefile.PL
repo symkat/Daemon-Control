@@ -8,5 +8,6 @@ license        'perl';
 # Specific dependencies
 requires       'File::Spec'     => '0';
 requires       'POSIX'          => '0';
+requires        'Cwd'           => '0';
 
 WriteAll;
