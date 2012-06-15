@@ -587,6 +587,9 @@ a PERL5LIB and such things.
 
 $daemon->init_config( "/etc/default/my_program" );
 
+If you are using perlbrew, you probably want to set your init_config to
+C<$ENV{PERLBREW_ROOT} . '/etc/bashrc'>.
+
 =head2 redirect_before_fork
 
 By default this is set true.  STDOUT will be redirected to stdout_file,
