@@ -1,3 +1,6 @@
+    * die with list of acceptable commands when called with an unrecognized one
+      (Karen Etheridge)
+
 0.0.9 2012-19-04 SymKat <symkat@symkat.com>
     * Stole Moo's MANIFEST.SKIP
 
