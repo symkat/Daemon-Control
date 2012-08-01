@@ -417,7 +417,7 @@ sub run {
     }
     else {
       die(($called_with ? "Error: undefined action $called_with. " : ''),
-        'Must be called with an action [start|stop|restart|status|show_warnings]');
+        'Must be called with an action [start|stop|restart|status|show_warnings|get_init_file]');
     }
     exit 0;
 }
