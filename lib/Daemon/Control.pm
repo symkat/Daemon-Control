@@ -414,10 +414,10 @@ sub run {
 
     if ( $self->can($action) ) {
         $self->$action;
-    } elsif ( ! $called_with  ) {
-        die "Must be called with an action [start|stop|restart|status|show_warnings]";
-    } else {
-        die "Error: undefined action $called_with";
+    }
+    else {
+      die(($called_with ? "Error: undefined action $called_with. " : ''),
+        'Must be called with an action [start|stop|restart|status|show_warnings|get_init_file]');
     }
     exit 0;
 }
