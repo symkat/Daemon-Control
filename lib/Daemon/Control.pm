@@ -241,8 +241,8 @@ sub pid_running {
 
     $self->read_pid;
 
+    return 0 unless $self->pid >= 1;
     return 0 unless kill 0, $self->pid;
-    #return kill 0, shift->pid;
 
     if ( $self->scan_name ) {
         open my $lf, "-|", "ps", "-p", $self->pid, "-o", "command="
