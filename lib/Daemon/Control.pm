@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use POSIX qw(_exit setsid setuid setgid getuid getgid);
 use File::Spec;
+use Cwd 'abs_path';
 require 5.008001; # Supporting 5.8.1+
 
 our $VERSION = '0.000009'; # 0.0.9
@@ -379,7 +380,7 @@ sub dump_init_script {
             REQUIRED_STOP     => $self->lsb_stop  ? $self->lsb_stop  : "",
             SHORT_DESCRIPTION => $self->lsb_sdesc ? $self->lsb_sdesc : "",
             DESCRIPTION       => $self->lsb_desc  ? $self->lsb_desc  : "",
-            SCRIPT            => $self->path      ? $self->path      : $0,
+            SCRIPT            => $self->path      ? $self->path      : abs_path($0),
             INIT_SOURCE_FILE  => $init_source_file,
         }
     ));
@@ -576,8 +577,7 @@ If provided, chdir to this directory before execution.
 
 The path of the script you are using Daemon::Control in.  This will be used in 
 the LSB file genration to point it to the location of the script.  If this is
-not provided $0 will be used, which is likely to work only if you use the full
-path to execute it when asking for the init script.
+not provided, the absolute path of $0 will be used.
 
 =head2 init_config
 
@@ -586,6 +586,9 @@ source this file to include the environment variables.  This is useful for setti
 a PERL5LIB and such things.
 
 $daemon->init_config( "/etc/default/my_program" );
+
+If you are using perlbrew, you probably want to set your init_config to
+C<$ENV{PERLBREW_ROOT} . '/etc/bashrc'>.
 
 =head2 redirect_before_fork
 
