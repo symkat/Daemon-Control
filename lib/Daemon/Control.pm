@@ -14,7 +14,7 @@ my @accessors = qw(
     pid color_map name program program_args directory
     uid path gid scan_name stdout_file stderr_file pid_file fork data 
     lsb_start lsb_stop lsb_sdesc lsb_desc redirect_before_fork init_config
-    kill_timeout
+    kill_timeout umask
 );
 
 # Accessor building
@@ -65,6 +65,7 @@ sub new {
         color_map               => { red => 31, green => 32 }, 
         redirect_before_fork    => 1,
         kill_timeout            => 1,
+        umask                   => 0,
     }, $class;
 
     for my $accessor ( @accessors ) {
@@ -128,6 +129,7 @@ sub _double_fork {
         if ( $new_pid == 0 ) { # Our double fork.
             setgid( $self->gid ) if $self->gid;
             setuid( $self->uid ) if $self->uid;
+            umask( $self->umask) if $self->umask;
             open( STDIN, "<", File::Spec->devnull );
 
             if ( $self->redirect_before_fork ) {
@@ -573,6 +575,18 @@ ONLY supported in double-fork mode and will only work if you are running
 as root. Accepts numeric GID, for groupnames please see L</group>.
 
     $daemon->gid( 1001 );
+
+=head2 umask
+
+If provided, the umask of the daemon will be set to the umask provided,
+note that the umask must be in oct.  By default the umask will not be
+changed.
+
+    $daemon->umask( 022 );
+    
+Or:
+
+    $daemon->umask( oct("022") );
 
 =head2 directory
 
