@@ -352,6 +352,18 @@ sub do_status {
     }
 }
 
+sub do_reload {
+    my ( $self ) = @_;
+    $self->read_pid;
+
+    if ( $self->pid && $self->pid_running  ) {
+        kill "SIGHUP", $self->pid;
+        $self->pretty_print( "Reloaded" );
+    } else {
+        $self->pretty_print( "Not Running", "red" );
+    }
+}
+
 sub do_get_init_file {
     shift->dump_init_script;
 }
@@ -422,7 +434,7 @@ sub run {
     if ( $self->can($action) ) {
         $self->$action;
     } elsif ( ! $called_with  ) {
-        die "Must be called with an action [start|stop|restart|status|show_warnings]";
+        die "Must be called with an action [start|stop|restart|reload|status|show_warnings]";
     } else {
         die "Error: undefined action $called_with";
     }
@@ -737,6 +749,13 @@ Is called when restart is given as an argument.  Calls do_stop and do_start.
 Called by:
 
     /usr/bin/my_program_launcher.pl restart
+
+=head2 do_reload
+
+Is called when reload is given as an argument.  Sends a HUP signal to the 
+daemon.
+
+    /usr/bin/my_program_launcher.pl reload
 
 =head2 do_status
 
