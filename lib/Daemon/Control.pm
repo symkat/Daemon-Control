@@ -14,6 +14,7 @@ my @accessors = qw(
     pid color_map name program program_args directory
     uid path gid scan_name stdout_file stderr_file pid_file fork data 
     lsb_start lsb_stop lsb_sdesc lsb_desc redirect_before_fork init_config
+    kill_timeout
 );
 
 # Accessor building
@@ -61,8 +62,9 @@ sub new {
     
     # Create the object with defaults.
     my $self = bless { 
-        color_map => { red => 31, green => 32 }, 
-        redirect_before_fork => 1,
+        color_map               => { red => 31, green => 32 }, 
+        redirect_before_fork    => 1,
+        kill_timeout            => 1,
     }, $class;
 
     for my $accessor ( @accessors ) {
@@ -311,7 +313,7 @@ sub do_stop {
     if ( $self->pid && $self->pid_running ) {
         foreach my $signal ( qw(TERM TERM INT KILL) ) {
             kill $signal => $self->pid;
-            sleep 1;
+            sleep $self->kill_timeout;
             last unless $self->pid_running;
         }
         if ( $self->pid_running ) {
@@ -651,6 +653,14 @@ a regular expression, we will also match the name of the program as shown
 in ps.
 
     $daemon->scan_name( qr|mydaemon| );
+
+=head2 kill_timeout
+
+This provides an amount of time in seconds between kill signals being
+sent to the daemon.  This value should be increased if your daemon has
+a longer shutdown period.  By default 1 second is used.
+
+    $daemon->kill_timeout( 7 );
 
 =head2 lsb_start
 
