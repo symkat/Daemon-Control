@@ -134,14 +134,14 @@ sub _double_fork {
 
             $self->_launch_program;
         } elsif ( not defined $new_pid ) {
-            print STDERR "Cannot fork: $!\n";
+            warn "Cannot fork: $!";
         } else {
             $self->pid( $new_pid );
             $self->write_pid;
             _exit 0;
         }
     } elsif ( not defined $pid ) { # We couldn't fork.  =(
-        print STDERR "Cannot fork: $!\n";
+        warn "Cannot fork: $!";
     } else { # In the parent, $pid = child's PID, return it.
         waitpid( $pid, 0 );
     }
@@ -155,7 +155,7 @@ sub _fork {
     if ( $pid == 0 ) { # Child, launch the process here.
         $self->_launch_program;
     } elsif ( not defined $pid ) {
-        print STDERR "Cannot fork: $!\n";
+        warn "Cannot fork: $!";
     } else { # In the parent, $pid = child's PID, return it.
         $self->pid( $pid );
         $self->write_pid;
@@ -196,7 +196,7 @@ sub write_pid {
             $self->_write_pid;
             _exit 0;
         } elsif ( not defined $session ) {
-            print STDERR "Cannot fork to write PID: $!\n";
+            warn "Cannot fork to write PID: $!\n";
         } else {
             #waitpid($session, 0);
             # Let the parent do nothing.
@@ -290,15 +290,15 @@ sub do_show_warnings {
     my ( $self ) = @_;
     
     if ( ! $self->fork ) {
-        print STDERR "Fork undefined.  Defaulting to fork => 2.\n";
+        warn "Fork undefined.  Defaulting to fork => 2.\n";
     }
 
     if ( ! $self->stdout_file ) {
-        print STDERR "stdout_file undefined.  Will not redirect file handle.\n";    
+        warn "stdout_file undefined.  Will not redirect file handle.\n";    
     }
     
     if ( ! $self->stderr_file ) {
-        print STDERR "stderr_file undefined.  Will not redirect file handle.\n";    
+        warn "stderr_file undefined.  Will not redirect file handle.\n";    
     }
     
 }
