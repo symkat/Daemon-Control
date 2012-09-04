@@ -484,12 +484,15 @@ sub run {
     my $called_with = shift @ARGV if @ARGV;
     my $action = "do_" . ($called_with ? $called_with : "" );
 
+    my $allowed_actions = "Must be called with an action: " .
+        "[start|stop|restart|reload|status|show_warnings|get_init_file]";
+
     if ( $self->can($action) ) {
         $self->$action;
     } elsif ( ! $called_with  ) {
-        die "Must be called with an action [start|stop|restart|reload|status|show_warnings]";
+        die $allowed_actions
     } else {
-        die "Error: undefined action $called_with";
+        die "Error: undefined action $called_with.  $allowed_actions";
     }
     exit 0;
 }
