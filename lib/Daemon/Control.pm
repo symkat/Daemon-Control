@@ -15,7 +15,7 @@ my @accessors = qw(
     pid color_map name program program_args directory
     uid path gid scan_name stdout_file stderr_file pid_file fork data 
     lsb_start lsb_stop lsb_sdesc lsb_desc redirect_before_fork init_config
-    kill_timeout umask resource_dir help
+    kill_timeout umask resource_dir help init_code
 );
 
 my $cmd_opt = "[start|stop|restart|reload|status|show_warnings|get_init_file|help]";
@@ -182,7 +182,14 @@ sub _double_fork {
 
             if ( $self->uid ) {
                 setuid( $self->uid );
+
+                # We cannot devine a username if one isn't set.
+                $ENV{USER} = $self->user if $self->user;
+                $ENV{HOME} = ((getpwuid($self->uid))[7]);
+
                 $self->trace( "setuid(" . $self->uid . ")" );
+                $self->trace( "\$ENV{HOME} => " . ((getpwuid($self->uid))[7]) );
+                $self->trace( "\$ENV{USER} => " . $self->user ) if $self->user;
             }
 
             if ( $self->umask ) {
@@ -460,6 +467,7 @@ sub dump_init_script {
             DESCRIPTION       => $self->lsb_desc  ? $self->lsb_desc  : "",
             SCRIPT            => $self->path      ? $self->path      : abs_path($0),
             INIT_SOURCE_FILE  => $init_source_file,
+            INIT_CODE_BLOCK   => $self->init_code ? $self->init_code : "",
         }
     ));
     print $self->data;
@@ -538,6 +546,8 @@ __DATA__
 ### END INIT INFO`
 
 [% INIT_SOURCE_FILE %]
+
+[% INIT_CODE_BLOCK %]
 
 if [ -x [% SCRIPT %] ];
 then

@@ -45,6 +45,8 @@ __DATA__
 
 
 
+
+
 if \[ -x /usr/sbin/mydaemon/init.pl \];
 then
     /usr/sbin/mydaemon/init.pl \$1
