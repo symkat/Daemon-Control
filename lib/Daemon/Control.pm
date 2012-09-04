@@ -91,6 +91,7 @@ sub _set_uid_from_name {
     my $uid = getpwnam( $name );
     die "Error: Couldn't get uid for non-existant user " . $self->user
         unless $uid;
+    $self->trace( "Set UID => $uid" );
     $self->uid( $uid );
 }
 
@@ -100,6 +101,7 @@ sub _set_gid_from_name {
     my $gid = getgrnam( $name );
     die "Error: Couldn't get gid for non-existant group " . $self->group
         unless $gid;
+    $self->trace( "Set GID => $gid" );
     $self->gid( $gid );
 
 }
@@ -109,13 +111,18 @@ sub redirect_filehandles {
 
     if ( $self->stdout_file ) {
         my $file = $self->stdout_file;
-        open STDOUT, ">>", ( $file eq '/dev/null' ? File::Spec->devnull : $file )
-            or die "Failed to open STDOUT to " . $self->stdout_file , ": $!";
+        $file = $file eq '/dev/null' ? File::Spec->devnull : $file;
+        open STDOUT, ">>", $file
+            or die "Failed to open STDOUT to $file: $!";
+        $self->trace( "STDOUT redirected to $file" );
+
     }
     if ( $self->stderr_file ) {
         my $file = $self->stderr_file;
-        open STDERR, ">>", ( $file eq '/dev/null' ? File::Spec->devnull : $file )
-            or die "Failed to open STDERR to " . $self->stderr_file . ": $!";
+        $file = $file eq '/dev/null' ? File::Spec->devnull : $file;
+        open STDERR, ">>", $file
+            or die "Failed to open STDERR to $file: $!";
+        $self->trace( "STDERR redirected to $file" );
     }
 }
 
@@ -123,13 +130,27 @@ sub _double_fork {
     my ( $self ) = @_;
     my $pid = fork();
 
+    $self->trace( "_double_fork()" );
     if ( $pid == 0 ) { # Child, launch the process here.
         setsid(); # Become the process leader.
         my $new_pid = fork();
         if ( $new_pid == 0 ) { # Our double fork.
-            setgid( $self->gid ) if $self->gid;
-            setuid( $self->uid ) if $self->uid;
-            umask( $self->umask) if $self->umask;
+
+            if ( $self->gid ) {
+                setgid( $self->gid );
+                $self->trace( "setgid(" . $self->gid . ")" );
+            }
+
+            if ( $self->uid ) {
+                setuid( $self->uid );
+                $self->trace( "setuid(" . $self->uid . ")" );
+            }
+
+            if ( $self->umask ) {
+                umask( $self->umask);
+                $self->trace( "umask(" . $self->umask . ")" );
+            }
+
             open( STDIN, "<", File::Spec->devnull );
 
             if ( $self->redirect_before_fork ) {
@@ -141,6 +162,7 @@ sub _double_fork {
             warn "Cannot fork: $!";
         } else {
             $self->pid( $new_pid );
+            $self->trace("Set PID => $new_pid" );
             $self->write_pid;
             _exit 0;
         }
@@ -156,6 +178,7 @@ sub _fork {
     my ( $self ) = @_;
     my $pid = fork();
 
+    $self->trace( "_fork()" );
     if ( $pid == 0 ) { # Child, launch the process here.
         $self->_launch_program;
     } elsif ( not defined $pid ) {
@@ -171,7 +194,10 @@ sub _fork {
 sub _launch_program {
     my ($self) = @_;
     
-    chdir( $self->directory ) if $self->directory;
+    if ( $self->directory ) {
+        chdir( $self->directory );
+        $self->trace( "chdir(" . $self->directory . ")" );
+    }
 
     if ( ref $self->program eq 'CODE' ) {
         $self->program->( $self, @{$self->program_args || []} );
@@ -439,6 +465,15 @@ sub run {
         die "Error: undefined action $called_with";
     }
     exit 0;
+}
+
+sub trace {
+    my ( $self, $message ) = @_;
+
+    return unless $ENV{DC_TRACE};
+    
+    print "[TRACE] $message\n" if $ENV{DC_TRACE} == 1;
+    print STDERR "[TRACE] $message\n" if $ENV{DC_TRACE} == 2;
 }
 
 1;
