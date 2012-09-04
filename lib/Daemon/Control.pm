@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use POSIX qw(_exit setsid setuid setgid getuid getgid);
 use File::Spec;
+use File::Path qw( make_path );
 use Cwd 'abs_path';
 require 5.008001; # Supporting 5.8.1+
 
@@ -14,7 +15,7 @@ my @accessors = qw(
     pid color_map name program program_args directory
     uid path gid scan_name stdout_file stderr_file pid_file fork data 
     lsb_start lsb_stop lsb_sdesc lsb_desc redirect_before_fork init_config
-    kill_timeout umask
+    kill_timeout umask resource_dir
 );
 
 # Accessor building
@@ -124,6 +125,42 @@ sub redirect_filehandles {
             or die "Failed to open STDERR to $file: $!";
         $self->trace( "STDERR redirected to $file" );
     }
+}
+
+sub _create_resource_dir {
+    my ( $self ) = @_;
+
+    return 0 unless $self->resource_dir;
+    
+    if ( -d $self->resource_dir ) {
+        $self->trace( "Resource dir exists (" . $self->resource_dir . ")" );
+        return 1;
+    }
+
+    my ( $created ) = make_path(
+        $self->resource_dir, 
+        { 
+            uid => $self->uid, 
+            group => $self->gid,
+            error => \my $errors,
+        }
+    );
+
+    if ( @$errors ) { 
+        for my $error ( @$errors ) {
+            my ( $file, $msg ) = %$error;
+            die "Error creating $file: $msg";
+        }
+    }
+
+    if ( $created eq $self->resource_dir ) {
+        $self->trace( "Created resource dir (" . $self->resource_dir . ")" );
+        return 1;
+    }
+
+    $self->trace( "_create_resource_dir() failed and I don't know why" );
+    return 0; 
+
 }
 
 sub _double_fork {
@@ -309,6 +346,8 @@ sub do_start {
         $self->pretty_print( "Duplicate Running", "red" );
         exit 1;
     }
+
+    $self->_create_resource_dir;
 
     $self->fork( 2 ) unless $self->fork;
     $self->_double_fork if $self->fork == 2;
