@@ -710,6 +710,20 @@ a C<PERL5LIB> and such things.
 If you are using perlbrew, you probably want to set your init_config to
 C<$ENV{PERLBREW_ROOT} . '/etc/bashrc'>.
 
+=head2 init_code
+
+When given, whatever text is in this field will be dumped directly into
+the generated init file.
+
+    $daemon->init_code( "Arbitrary code goes here." )
+
+=head2 help
+
+Any text in this accessor will be printed when the script is called
+with the argument C<--help> or <help>.
+
+    $daemon->help( "Read The Friendly Source." );
+
 =head2 redirect_before_fork
 
 By default this is set to true.  STDOUT will be redirected to C<stdout_file>,
@@ -741,7 +755,14 @@ recommended to set this to the file which the daemon launching in single-fork
 mode will put its PID.  Failure to follow this will most likely result in status,
 stop, and restart not working.
 
-    $daemon->pid_file( "/tmp/mydaemon.pid" );
+    $daemon->pid_file( "/var/run/mydaemon/mydaemon.pid" );
+
+=head2 resource_dir
+
+This directory will be created, and chowned to the user/group provided in
+C<user>, and C<group>.
+
+    $daemon->resource_dir( "/var/run/mydaemon" );
 
 =head2 fork
 
@@ -886,7 +907,11 @@ A function to dump the LSB compatible init script.  Used by do_get_init_file.
 
 =head1 AUTHOR
 
-SymKat I<E<lt>symkat@symkat.comE<gt>> ( Blog: L<http://symkat.com/> )
+=over 4
+
+Kaitlyn Parkhurst (SymKat) I<E<lt>symkat@symkat.comE<gt>> ( Blog: L<http://symkat.com/> )
+
+=back
 
 =head2 CONTRIBUTORS
 
@@ -895,6 +920,8 @@ SymKat I<E<lt>symkat@symkat.comE<gt>> ( Blog: L<http://symkat.com/> )
 =item * Matt S. Trout (mst) I<E<lt>mst@shadowcat.co.ukE<gt>>
 
 =item * Mike Doherty (doherty) I<E<lt>doherty@cpan.orgE<gt>>
+
+=item * Karen Etheridge (ether) I<E<lt>ether@cpan.orgE<gt>>
 
 =back
 
