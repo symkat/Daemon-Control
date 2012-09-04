@@ -925,6 +925,16 @@ Kaitlyn Parkhurst (SymKat) I<E<lt>symkat@symkat.comE<gt>> ( Blog: L<http://symka
 
 =back
 
+=head2 SPONSORS
+
+Parts of this code were paid for by
+
+=over 4
+
+=item (mt) Media Temple L<http://www.mediatemple.net>
+
+=back
+
 =head1 COPYRIGHT
 
 Copyright (c) 2012 the Daemon::Control L</AUTHOR> and L</CONTRIBUTORS> as listed above.

@@ -356,6 +356,12 @@ Kaitlyn Parkhurst (SymKat) _<symkat@symkat.com>_ ( Blog: [http://symkat.com/](ht
 - Mike Doherty (doherty) \_<doherty@cpan.org>\_
 - Karen Etheridge (ether) \_<ether@cpan.org>\_
 
+## SPONSORS
+
+Parts of this code were paid for by
+
+- (mt) Media Temple \[http://www.mediatemple.net\](http://www.mediatemple.net)
+
 # COPYRIGHT
 
 Copyright (c) 2012 the Daemon::Control ["AUTHOR"](#AUTHOR) and ["CONTRIBUTORS"](#CONTRIBUTORS) as listed above.
