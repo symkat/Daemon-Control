@@ -481,6 +481,12 @@ sub run {
         die "Error: name must be defined.";
     }
 
+    if ( $self->uid && ! $self->gid ) {
+        my ( $gid ) = ( (getpwuid( $self->uid ))[3] );
+        $self->gid( $gid );
+        $self->trace( "Implicit GID => $gid" );
+    }
+
     my $called_with = shift @ARGV if @ARGV;
     my $action = "do_" . ($called_with ? $called_with : "" );
 
