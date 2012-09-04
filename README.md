@@ -364,7 +364,7 @@ Parts of this code were paid for by
 
 # COPYRIGHT
 
-Copyright (c) 2012 the Daemon::Control ["AUTHOR"](#AUTHOR) and ["CONTRIBUTORS"](#CONTRIBUTORS) as listed above.
+Copyright (c) 2012 the Daemon::Control ["AUTHOR"](#AUTHOR), ["CONTRIBUTORS"](#CONTRIBUTORS), and ["SPONSORS"](#SPONSORS) as listed above.
 
 # LICENSE 
 

@@ -937,7 +937,7 @@ Parts of this code were paid for by
 
 =head1 COPYRIGHT
 
-Copyright (c) 2012 the Daemon::Control L</AUTHOR> and L</CONTRIBUTORS> as listed above.
+Copyright (c) 2012 the Daemon::Control L</AUTHOR>, L</CONTRIBUTORS>, and L</SPONSORS> as listed above.
 
 =head1 LICENSE 
 
