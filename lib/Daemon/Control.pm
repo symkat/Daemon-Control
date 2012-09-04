@@ -249,27 +249,15 @@ sub _launch_program {
 sub write_pid {
     my ( $self ) = @_;
 
-    # We're going to fork a process to do this,
-    # and change our UID/GID to the target.  This
-    # should prevent the issue of creating a PID file
-    # as root and then moving our permissions down and
-    # failing to read it.
-    
-    if ( $self->uid ) {
-        my $session = fork();
-        if ( $session == 0 ) {
-            setuid($self->uid);
-            setgid($self->gid);
-            $self->_write_pid;
-            _exit 0;
-        } elsif ( not defined $session ) {
-            warn "Cannot fork to write PID: $!\n";
-        } else {
-            #waitpid($session, 0);
-            # Let the parent do nothing.
-        }
-    } else {
-        $self->_write_pid;
+
+    # Create the PID file as the user we currently are,
+    # and change the permissions to our target UID/GID.
+
+    $self->_write_pid;
+
+    if ( $self->uid && $self->gid ) {
+        chown $self->uid, $self->gid, $self->pid_file;
+        $self->trace("PID => chown(" . $self->uid . ", " . $self->gid .")");
     }
 }
 
