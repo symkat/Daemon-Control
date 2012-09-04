@@ -15,8 +15,10 @@ my @accessors = qw(
     pid color_map name program program_args directory
     uid path gid scan_name stdout_file stderr_file pid_file fork data 
     lsb_start lsb_stop lsb_sdesc lsb_desc redirect_before_fork init_config
-    kill_timeout umask resource_dir
+    kill_timeout umask resource_dir help
 );
+
+my $cmd_opt = "[start|stop|restart|reload|status|show_warnings|get_init_file|help]";
 
 # Accessor building
 
@@ -419,6 +421,13 @@ sub do_get_init_file {
     shift->dump_init_script;
 }
 
+sub do_help {
+    my ( $self ) = @_;
+
+    print "Syntax: $0 $cmd_opt\n\n";
+    print $self->help if $self->help;
+}
+
 sub dump_init_script {
     my ( $self ) = @_;
     if ( ! $self->data ) {
@@ -486,10 +495,11 @@ sub run {
     }
 
     my $called_with = shift @ARGV if @ARGV;
+    $called_with =~ s/^[-]+//g; # Allow people to do --command too.
+
     my $action = "do_" . ($called_with ? $called_with : "" );
 
-    my $allowed_actions = "Must be called with an action: " .
-        "[start|stop|restart|reload|status|show_warnings|get_init_file]";
+    my $allowed_actions = "Must be called with an action: $cmd_opt";
 
     if ( $self->can($action) ) {
         $self->$action;
