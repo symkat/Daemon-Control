@@ -13,7 +13,7 @@ $VERSION = eval $VERSION;
 
 my @accessors = qw(
     pid color_map name program program_args directory
-    uid path gid scan_name stdout_file stderr_file pid_file fork data 
+    uid path gid scan_name stdout_file stderr_file pid_file fork data
     lsb_start lsb_stop lsb_sdesc lsb_desc redirect_before_fork init_config
     kill_timeout umask resource_dir help init_code
 );
@@ -62,10 +62,10 @@ sub group {
 
 sub new {
     my ( $class, $args ) = @_;
-    
+
     # Create the object with defaults.
-    my $self = bless { 
-        color_map               => { red => 31, green => 32 }, 
+    my $self = bless {
+        color_map               => { red => 31, green => 32 },
         redirect_before_fork    => 1,
         kill_timeout            => 1,
         umask                   => 0,
@@ -133,22 +133,22 @@ sub _create_resource_dir {
     my ( $self ) = @_;
 
     return 0 unless $self->resource_dir;
-    
+
     if ( -d $self->resource_dir ) {
         $self->trace( "Resource dir exists (" . $self->resource_dir . ")" );
         return 1;
     }
 
     my ( $created ) = make_path(
-        $self->resource_dir, 
-        { 
-            uid => $self->uid, 
+        $self->resource_dir,
+        {
+            uid => $self->uid,
             group => $self->gid,
             error => \my $errors,
         }
     );
 
-    if ( @$errors ) { 
+    if ( @$errors ) {
         for my $error ( @$errors ) {
             my ( $file, $msg ) = %$error;
             die "Error creating $file: $msg";
@@ -161,7 +161,7 @@ sub _create_resource_dir {
     }
 
     $self->trace( "_create_resource_dir() failed and I don't know why" );
-    return 0; 
+    return 0;
 
 }
 
@@ -237,7 +237,7 @@ sub _fork {
 
 sub _launch_program {
     my ($self) = @_;
-    
+
     if ( $self->directory ) {
         chdir( $self->directory );
         $self->trace( "chdir(" . $self->directory . ")" );
@@ -247,7 +247,7 @@ sub _launch_program {
         $self->program->( $self, @{$self->program_args || []} );
     } else {
         exec ( $self->program, @{$self->program_args || [ ]} )
-            or die "Failed to exec " . $self->program . " " 
+            or die "Failed to exec " . $self->program . " "
                 . join( " ", @{$self->program_args} ) . ": $!";
     }
     exit 0;
@@ -288,7 +288,7 @@ sub read_pid {
         return 0;
     }
 
-    open my $lf, "<", $self->pid_file 
+    open my $lf, "<", $self->pid_file
         or die "Failed to read " . $self->pid_file . ": $!";
     my $pid = do { local $/; <$lf> };
     close $lf;
@@ -334,7 +334,7 @@ sub do_start {
         $self->pid( 0 ); # Make PID invalid.
         $self->write_pid();
     }
-    
+
     # Duplicate Check
     $self->read_pid;
     if ( $self->pid && $self->pid_running ) {
@@ -352,19 +352,18 @@ sub do_start {
 
 sub do_show_warnings {
     my ( $self ) = @_;
-    
+
     if ( ! $self->fork ) {
         warn "Fork undefined.  Defaulting to fork => 2.\n";
     }
 
     if ( ! $self->stdout_file ) {
-        warn "stdout_file undefined.  Will not redirect file handle.\n";    
+        warn "stdout_file undefined.  Will not redirect file handle.\n";
     }
-    
+
     if ( ! $self->stderr_file ) {
-        warn "stderr_file undefined.  Will not redirect file handle.\n";    
+        warn "stderr_file undefined.  Will not redirect file handle.\n";
     }
-    
 }
 
 sub do_stop {
@@ -388,7 +387,7 @@ sub do_stop {
     }
 
     # Clean up the PID file on stop.
-    unlink($self->pid_file) if $self->pid_file; 
+    unlink($self->pid_file) if $self->pid_file;
 }
 
 sub do_restart {
@@ -450,8 +449,8 @@ sub dump_init_script {
     # or making TT a dependancy, I'm just going to fake template
     # IF logic.
     my $init_source_file = $self->init_config
-        ? $self->run_template( 
-            '[ -r [% FILE %] ] && . [% FILE %]',  
+        ? $self->run_template(
+            '[ -r [% FILE %] ] && . [% FILE %]',
             { FILE => $self->init_config } )
         : "";
 
@@ -484,7 +483,7 @@ sub run_template {
 # Application Code.
 sub run {
     my ( $self ) = @_;
-   
+
     # Error Checking.
     if ( ! $self->program ) {
         die "Error: program must be defined.";
@@ -523,7 +522,7 @@ sub trace {
     my ( $self, $message ) = @_;
 
     return unless $ENV{DC_TRACE};
-    
+
     print "[TRACE] $message\n" if $ENV{DC_TRACE} == 1;
     print STDERR "[TRACE] $message\n" if $ENV{DC_TRACE} == 2;
 }
@@ -611,7 +610,7 @@ You can also make an LSB compatible init script:
 
 =head1 CONSTRUCTOR
 
-The constuctor takes the following arguments.
+The constructor takes the following arguments.
 
 =head2 name
 
@@ -645,7 +644,7 @@ be executed.
 
 When set, the username supplied to this accessor will be used to set
 the UID attribute.  When this is used, C<uid> will be changed from
-its inital settings if you set it (which you shouldn't, since you're
+its initial settings if you set it (which you shouldn't, since you're
 using usernames instead of UIDs).  See L</uid> for setting numerical
 user ids.
 
@@ -655,7 +654,7 @@ user ids.
 
 When set, the groupname supplied to this accessor will be used to set
 the GID attribute.  When this is used, C<gid> will be changed from
-its inital settings if you set it (which you shouldn't, since you're
+its initial settings if you set it (which you shouldn't, since you're
 using groupnames instead of GIDs).  See L</gid> for setting numerical
 group ids.
 
@@ -684,7 +683,7 @@ note that the umask must be in oct.  By default the umask will not be
 changed.
 
     $daemon->umask( 022 );
-    
+
 Or:
 
     $daemon->umask( oct("022") );
@@ -695,8 +694,8 @@ If provided, chdir to this directory before execution.
 
 =head2 path
 
-The path of the script you are using Daemon::Control in.  This will be used in 
-the LSB file genration to point it to the location of the script.  If this is
+The path of the script you are using Daemon::Control in.  This will be used in
+the LSB file generation to point it to the location of the script.  If this is
 not provided, the absolute path of $0 will be used.
 
 =head2 init_config
@@ -771,7 +770,7 @@ The mode to use for fork.  By default a double-fork will be used.
 In double-fork, uid, gid, std*_file, and a number of other things are
 supported.  A traditional double-fork is used and setsid is called.
 
-In single-fork none of the above are called, and it is the responsiblity
+In single-fork none of the above are called, and it is the responsibility
 of whatever you're forking to reopen files, associate with the init process
 and do all that fun stuff.  This mode is recommended when the program you want
 to control has its own daemonizing code.  It is important to note that the PID
@@ -820,7 +819,7 @@ The value of this string is used for the 'Short-Description' value of
 the generated LSB init script.  See L<http://wiki.debian.org/LSBInitScripts>
 for more information.
 
-    $daemon->lsb_sdesc( 'Mah program...' );
+    $daemon->lsb_sdesc( 'My program...' );
 
 =head2 lsb_desc
 
@@ -862,7 +861,7 @@ Called by:
 
 =head2 do_reload
 
-Is called when reload is given as an argument.  Sends a HUP signal to the 
+Is called when reload is given as an argument.  Sends a HUP signal to the
 daemon.
 
     /usr/bin/my_program_launcher.pl reload
@@ -884,7 +883,7 @@ compatible init file, for use in /etc/init.d/. Called by:
 =head2 pretty_print
 
 This is used to display status to the user.  It accepts a message and a color.
-It will default to green text, if no color is explictly given.  Only supports
+It will default to green text, if no color is explicitly given.  Only supports
 red and green.
 
     $daemon->pretty_print( "My Status", "red" );
@@ -939,7 +938,7 @@ Parts of this code were paid for by
 
 Copyright (c) 2012 the Daemon::Control L</AUTHOR>, L</CONTRIBUTORS>, and L</SPONSORS> as listed above.
 
-=head1 LICENSE 
+=head1 LICENSE
 
 This library is free software and may be distributed under the same terms as perl itself.
 
