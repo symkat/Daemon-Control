@@ -11,7 +11,7 @@ Daemon::Control->new({
     lsb_desc    => 'My Daemon controls the My Daemon daemon.',
     path        => '/usr/sbin/mydaemon/init.pl',
 
-    program     => sub { 1 }, 
+    program     => sub { 1 },
     program_args => [ ],
 
     redirect_before_fork => 0,
