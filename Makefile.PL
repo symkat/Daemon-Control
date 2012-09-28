@@ -11,6 +11,8 @@ auto_set_repository;
 # Specific dependencies
 requires       'File::Spec'     => '0';
 requires       'POSIX'          => '0';
-requires        'Cwd'           => '0';
+requires       'Cwd'            => '0';
+
+test_requires   'Test::More'    => '0.42';
 
 WriteAll;
