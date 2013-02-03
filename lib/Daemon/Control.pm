@@ -217,7 +217,7 @@ sub _double_fork {
     } else { # In the parent, $pid = child's PID, return it.
         waitpid( $pid, 0 );
     }
-    return $self;
+    return $pid;
 }
 
 sub _fork {
@@ -232,7 +232,7 @@ sub _fork {
     } else { # In the parent, $pid = child's PID, return it.
         # Nothing
     }
-    return $self;
+    return $pid;
 }
 
 sub _launch_program {
@@ -243,6 +243,8 @@ sub _launch_program {
         $self->trace( "chdir(" . $self->directory . ")" );
     }
 
+    return unless $self->program;
+
     if ( ref $self->program eq 'CODE' ) {
         $self->program->( $self, @{$self->program_args || []} );
     } else {
@@ -251,6 +253,30 @@ sub _launch_program {
                 . join( " ", @{$self->program_args} ) . ": $!";
     }
     exit 0;
+}
+
+sub _stop_process {
+    my ( $self ) = @_;
+
+    $self->read_pid;
+
+    if ( $self->pid && $self->pid_running ) {
+        foreach my $signal ( qw(TERM TERM INT KILL) ) {
+            kill $signal => $self->pid;
+            sleep $self->kill_timeout;
+            last unless $self->pid_running;
+        }
+        if ( $self->pid_running ) {
+            $self->pretty_print( "Failed to Stop", "red" );
+            exit 1;
+        }
+        $self->pretty_print( "Stopped" );
+    } else {
+        $self->pretty_print( "Not Running", "red" );
+    }
+
+    # Clean up the PID file on stop.
+    unlink($self->pid_file) if $self->pid_file;
 }
 
 sub write_pid {
@@ -345,49 +371,47 @@ sub do_start {
     $self->_create_resource_dir;
 
     $self->fork( 2 ) unless $self->fork;
-    $self->_double_fork if $self->fork == 2;
-    $self->_fork if $self->fork == 1;
-    $self->pretty_print( "Started" );
+
+    my $pid = $self->fork == 2
+        ? $self->_double_fork
+        : $self->_fork;
+    
+    # The parent process gives feedback to user
+    # and exits anyway
+    if ($pid) {
+        $self->pretty_print( "Started" );
+        exit 0;
+    }
+
+    # The child process continues to following code unless $self->program is 
+    # defined
 }
 
 sub do_show_warnings {
     my ( $self ) = @_;
+    my $ww = 0;
 
     if ( ! $self->fork ) {
         warn "Fork undefined.  Defaulting to fork => 2.\n";
+        $ww++;
     }
 
     if ( ! $self->stdout_file ) {
         warn "stdout_file undefined.  Will not redirect file handle.\n";
+        $ww++;
     }
 
     if ( ! $self->stderr_file ) {
         warn "stderr_file undefined.  Will not redirect file handle.\n";
+        $ww++;
     }
+
+    exit $ww ? 1 : 0;
 }
 
 sub do_stop {
-    my ( $self ) = @_;
-
-    $self->read_pid;
-
-    if ( $self->pid && $self->pid_running ) {
-        foreach my $signal ( qw(TERM TERM INT KILL) ) {
-            kill $signal => $self->pid;
-            sleep $self->kill_timeout;
-            last unless $self->pid_running;
-        }
-        if ( $self->pid_running ) {
-            $self->pretty_print( "Failed to Stop", "red" );
-            exit 1;
-        }
-        $self->pretty_print( "Stopped" );
-    } else {
-        $self->pretty_print( "Not Running", "red" );
-    }
-
-    # Clean up the PID file on stop.
-    unlink($self->pid_file) if $self->pid_file;
+    shift->_stop_process;
+    exit 0;
 }
 
 sub do_restart {
@@ -395,7 +419,7 @@ sub do_restart {
     $self->read_pid;
 
     if ( $self->pid_running ) {
-        $self->do_stop;
+        $self->_stop_process;
     }
     $self->do_start;
 }
@@ -406,8 +430,10 @@ sub do_status {
 
     if ( $self->pid && $self->pid_running ) {
         $self->pretty_print( "Running" );
+        exit 0;
     } else {
         $self->pretty_print( "Not Running", "red" );
+        exit 1;
     }
 }
 
@@ -418,13 +444,16 @@ sub do_reload {
     if ( $self->pid && $self->pid_running  ) {
         kill "SIGHUP", $self->pid;
         $self->pretty_print( "Reloaded" );
+        exit 0;
     } else {
         $self->pretty_print( "Not Running", "red" );
+        exit 1;
     }
 }
 
 sub do_get_init_file {
     shift->dump_init_script;
+    exit 0;
 }
 
 sub do_help {
@@ -432,6 +461,8 @@ sub do_help {
 
     print "Syntax: $0 $cmd_opt\n\n";
     print $self->help if $self->help;
+
+    exit 0;
 }
 
 sub dump_init_script {
@@ -470,6 +501,8 @@ sub dump_init_script {
         }
     ));
     print $self->data;
+
+    exit 0;
 }
 
 sub run_template {
@@ -485,9 +518,9 @@ sub run {
     my ( $self ) = @_;
 
     # Error Checking.
-    if ( ! $self->program ) {
-        die "Error: program must be defined.";
-    }
+    # if ( ! $self->program ) {
+    #     die "Error: program must be defined.";
+    # }
     if ( ! $self->pid_file ) {
         die "Error: pid_file must be defined.";
     }
@@ -518,7 +551,6 @@ sub run {
     } else {
         die "Error: undefined action $called_with.  $allowed_actions";
     }
-    exit 0;
 }
 
 sub trace {
