@@ -1,3 +1,6 @@
+    * fixed a warning on "uninitialized value $called_with in substitution"
+      (Kromg)
+
     * include the date and module version in the generated init file
       (Karen Etheridge)
 

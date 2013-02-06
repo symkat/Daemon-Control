@@ -501,8 +501,11 @@ sub run {
         $self->trace( "Implicit GID => $gid" );
     }
 
-    my $called_with = shift @ARGV if @ARGV;
-    $called_with =~ s/^[-]+//g; # Allow people to do --command too.
+    my $called_with;
+    if (@ARGV) {
+        $called_with = shift @ARGV;
+        $called_with =~ s/^[-]+//g; # Allow people to do --command too.
+    }
 
     my $action = "do_" . ($called_with ? $called_with : "" );
 
