@@ -51,7 +51,7 @@ You can also make an LSB compatible init script:
 
 # CONSTRUCTOR
 
-The constuctor takes the following arguments.
+The constructor takes the following arguments.
 
 ## name
 
@@ -85,7 +85,7 @@ be executed.
 
 When set, the username supplied to this accessor will be used to set
 the UID attribute.  When this is used, `uid` will be changed from
-its inital settings if you set it (which you shouldn't, since you're
+its initial settings if you set it (which you shouldn't, since you're
 using usernames instead of UIDs).  See ["uid"](#uid) for setting numerical
 user ids.
 
@@ -95,7 +95,7 @@ user ids.
 
 When set, the groupname supplied to this accessor will be used to set
 the GID attribute.  When this is used, `gid` will be changed from
-its inital settings if you set it (which you shouldn't, since you're
+its initial settings if you set it (which you shouldn't, since you're
 using groupnames instead of GIDs).  See ["gid"](#gid) for setting numerical
 group ids.
 
@@ -124,7 +124,6 @@ note that the umask must be in oct.  By default the umask will not be
 changed.
 
     $daemon->umask( 022 );
-    
 
 Or:
 
@@ -136,8 +135,8 @@ If provided, chdir to this directory before execution.
 
 ## path
 
-The path of the script you are using Daemon::Control in.  This will be used in 
-the LSB file genration to point it to the location of the script.  If this is
+The path of the script you are using Daemon::Control in.  This will be used in
+the LSB file generation to point it to the location of the script.  If this is
 not provided, the absolute path of $0 will be used.
 
 ## init\_config
@@ -212,7 +211,7 @@ The mode to use for fork.  By default a double-fork will be used.
 In double-fork, uid, gid, std\*\_file, and a number of other things are
 supported.  A traditional double-fork is used and setsid is called.
 
-In single-fork none of the above are called, and it is the responsiblity
+In single-fork none of the above are called, and it is the responsibility
 of whatever you're forking to reopen files, associate with the init process
 and do all that fun stuff.  This mode is recommended when the program you want
 to control has its own daemonizing code.  It is important to note that the PID
@@ -261,7 +260,7 @@ The value of this string is used for the 'Short-Description' value of
 the generated LSB init script.  See [http://wiki.debian.org/LSBInitScripts](http://wiki.debian.org/LSBInitScripts)
 for more information.
 
-    $daemon->lsb_sdesc( 'Mah program...' );
+    $daemon->lsb_sdesc( 'My program...' );
 
 ## lsb\_desc
 
@@ -303,7 +302,7 @@ Called by:
 
 ## do\_reload
 
-Is called when reload is given as an argument.  Sends a HUP signal to the 
+Is called when reload is given as an argument.  Sends a HUP signal to the
 daemon.
 
     /usr/bin/my_program_launcher.pl reload
@@ -325,7 +324,7 @@ compatible init file, for use in /etc/init.d/. Called by:
 ## pretty\_print
 
 This is used to display status to the user.  It accepts a message and a color.
-It will default to green text, if no color is explictly given.  Only supports
+It will default to green text, if no color is explicitly given.  Only supports
 red and green.
 
     $daemon->pretty_print( "My Status", "red" );
@@ -348,25 +347,25 @@ A function to dump the LSB compatible init script.  Used by do\_get\_init\_file.
 
 # AUTHOR
 
-Kaitlyn Parkhurst (SymKat) _<symkat@symkat.com>_ ( Blog: [http://symkat.com/](http://symkat.com/) )
+    Kaitlyn Parkhurst (SymKat) _<symkat@symkat.com>_ ( Blog: [http://symkat.com/](http://symkat.com/) )
 
 ## CONTRIBUTORS
 
-- Matt S. Trout (mst) \_<mst@shadowcat.co.uk>\_
-- Mike Doherty (doherty) \_<doherty@cpan.org>\_
-- Karen Etheridge (ether) \_<ether@cpan.org>\_
+- Matt S. Trout (mst) _<mst@shadowcat.co.uk>_
+- Mike Doherty (doherty) _<doherty@cpan.org>_
+- Karen Etheridge (ether) _<ether@cpan.org>_
 
 ## SPONSORS
 
 Parts of this code were paid for by
 
-- (mt) Media Temple \[http://www.mediatemple.net\](http://www.mediatemple.net)
+- (mt) Media Temple [http://www.mediatemple.net](http://www.mediatemple.net)
 
 # COPYRIGHT
 
 Copyright (c) 2012 the Daemon::Control ["AUTHOR"](#AUTHOR), ["CONTRIBUTORS"](#CONTRIBUTORS), and ["SPONSORS"](#SPONSORS) as listed above.
 
-# LICENSE 
+# LICENSE
 
 This library is free software and may be distributed under the same terms as perl itself.
 
