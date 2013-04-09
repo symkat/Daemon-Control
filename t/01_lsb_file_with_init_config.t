@@ -49,7 +49,7 @@ __DATA__
 
 if \[ -x /usr/sbin/mydaemon/init.pl \];
 then
-    /usr/sbin/mydaemon/init.pl \$1
+    /usr/sbin/mydaemon/init.pl 10 \$1
 else
     echo "Required program /usr/sbin/mydaemon/init.pl not found!"
     exit 1;

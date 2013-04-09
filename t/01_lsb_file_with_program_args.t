@@ -6,11 +6,11 @@ use Test::More;
 my ( $file, $ilib );
 
 # Let's make it so people can test in t/ or in the dist directory.
-if ( -f 't/bin/01_lsb_03.pl' ) { # Dist Directory.
-    $file = "t/bin/01_lsb_03.pl";
+if ( -f 't/bin/01_lsb_04.pl' ) { # Dist Directory.
+    $file = "t/bin/01_lsb_04.pl";
     $ilib = "lib";
-} elsif ( -f 'bin/01_lsb_03.pl' ) {
-    $file = "bin/01_lsb_03.pl";
+} elsif ( -f 'bin/01_lsb_04.pl' ) {
+    $file = "bin/01_lsb_04.pl";
     $ilib = "../lib";
 } else {
     die "Tests should be run in the dist directory or t/";
@@ -23,7 +23,6 @@ my $content = do { local $/; <$lf> };
 close $lf;
 
 my $content_expected = do { local $/; <DATA> };
-
 like $content, qr/$content_expected/, "LSB File Generation Works.";
 
 done_testing;
@@ -43,14 +42,13 @@ __DATA__
 # Description:       My Daemon controls the My Daemon daemon.
 ### END INIT INFO`
 
+\[ -r /etc/default/my_program \] && . /etc/default/my_program
 
 
-Test This
-One Block
 
 if \[ -x /usr/sbin/mydaemon/init.pl \];
 then
-    /usr/sbin/mydaemon/init.pl 10 \$1
+    /usr/sbin/mydaemon/init.pl -r /opt/pinto -p 3999 \$1
 else
     echo "Required program /usr/sbin/mydaemon/init.pl not found!"
     exit 1;
