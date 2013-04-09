@@ -453,7 +453,6 @@ sub dump_init_script {
             '[ -r [% FILE %] ] && . [% FILE %]',
             { FILE => $self->init_config } )
         : "";
-
     $self->data( $self->run_template(
         $self->data,
         {
@@ -467,6 +466,7 @@ sub dump_init_script {
             SCRIPT            => $self->path      ? $self->path      : abs_path($0),
             INIT_SOURCE_FILE  => $init_source_file,
             INIT_CODE_BLOCK   => $self->init_code ? $self->init_code : "",
+            PROGRAM_ARGS      => ($self->program_args ? join (' ',@{$self->program_args}) : ""),
         }
     ));
     print $self->data;
@@ -553,7 +553,7 @@ __DATA__
 
 if [ -x [% SCRIPT %] ];
 then
-    [% SCRIPT %] $1
+    [% SCRIPT %] [% PROGRAM_ARGS %] $1
 else
     echo "Required program [% SCRIPT %] not found!"
     exit 1;
