@@ -4,17 +4,17 @@
     * include the date and module version in the generated init file
       (Karen Etheridge)
 
-0.0.9 2012-19-04 SymKat <symkat@symkat.com>
+0.000009  2012-19-04 SymKat <symkat@symkat.com>
     * Stole Moo's MANIFEST.SKIP
 
-0.0.8 2012-19-04 SymKat <symkat@symkat.com>
+0.000008  2012-19-04 SymKat <symkat@symkat.com>
     * Added Makefile to MANIFEST.SKIP
 
-0.0.7 2012-15-04 SymKat <symkat@symkat.com>
+0.000007  2012-15-04 SymKat <symkat@symkat.com>
     * Added user and group accessors to set uid/gid based on names
     * Updated docs.
 
-0.0.6 2012-15-04 SymKat <symkat@symkat.com>
+0.000006  2012-15-04 SymKat <symkat@symkat.com>
     * PID file will be deleted on do_stop
     * PID file will be created by the target user when ->uid set
     * uid() and gid() now take strings as well (doherty)
@@ -23,22 +23,22 @@
     * Typo fixes
     * Mike Doherty (doherty) added to contrib (Thank you!)
 
-0.0.5 2012-18-02 SymKat <symkat@symkat.com>
+0.000005  2012-18-02 SymKat <symkat@symkat.com>
     * Fixed an issue with the inital PID being invalid.
     * Added directory accessor to support chdir before exec.
     * Minor documentation changes
 
-0.0.4 2012-18-02 SymKat <symkat@symkat.com>
+0.000004  2012-18-02 SymKat <symkat@symkat.com>
     * First release to cpan.
     * Refactoring and review by Matt S. Trout
     * I really changed the version this time!
 
-0.0.3 2012-18-02 SymKat <symkat@symkat.com>
+0.000003  2012-18-02 SymKat <symkat@symkat.com>
     * Test added for show_warnings.
     * Documentation updated for 0.0.2 changes.
     * Version changed this time.
 
-0.0.2 2012-18-02 SymKat <symkat@symkat.com>
+0.000002  2012-18-02 SymKat <symkat@symkat.com>
     * Default fork mode changed to double.
     * Added show_warnings command instead of alerting
       about DWIM actions.
@@ -48,5 +48,5 @@
     * redirect_before_fork added (default 1)
     * With a code ref, $self is passed (can $control->redriect_filehandles)
 
-0.0.1 2012-02-02 SymKat <symkat@symkat.com>
+0.000001 2012-02-02 SymKat <symkat@symkat.com>
     * Inital Commit
