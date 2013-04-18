@@ -247,12 +247,14 @@ sub _launch_program {
         $self->trace( "chdir(" . $self->directory . ")" );
     }
 
+    my @args = @{$self->program_args || [ ]};
+
     if ( ref $self->program eq 'CODE' ) {
-        $self->program->( $self, @{$self->program_args || []} );
+        $self->program->( $self, @args );
     } else {
-        exec ( $self->program, @{$self->program_args || [ ]} )
+        exec ( $self->program, @args )
             or die "Failed to exec " . $self->program . " "
-                . join( " ", @{$self->program_args} ) . ": $!";
+                . join( " ", @args ) . ": $!";
     }
     exit 0;
 }
