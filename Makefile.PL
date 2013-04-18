@@ -14,6 +14,6 @@ requires       'POSIX'          => '0';
 requires       'Cwd'            => '0';
 requires       'File::Path'     => '2.08';
 
-test_requires  'Test::More'     => '0.42';
+test_requires  'Test::More'     => '0.88';
 
 WriteAll;
