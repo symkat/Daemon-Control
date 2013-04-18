@@ -187,13 +187,12 @@ sub _double_fork {
             if ( $self->uid ) {
                 setuid( $self->uid );
 
-                # We cannot devine a username if one isn't set.
-                $ENV{USER} = $self->user if $self->user;
+                $ENV{USER} = $self->user || getpwuid($self->uid);
                 $ENV{HOME} = ((getpwuid($self->uid))[7]);
 
                 $self->trace( "setuid(" . $self->uid . ")" );
-                $self->trace( "\$ENV{HOME} => " . ((getpwuid($self->uid))[7]) );
-                $self->trace( "\$ENV{USER} => " . $self->user ) if $self->user;
+                $self->trace( "\$ENV{USER} => " . $ENV{USER} );
+                $self->trace( "\$ENV{HOME} => " . $ENV{HOME} );
             }
 
             if ( $self->umask ) {
