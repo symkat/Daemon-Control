@@ -6,6 +6,14 @@
     * include the date and module version in the generated init file
       (Karen Etheridge)
 
+    * warn is used rather than printing to STDERR
+    * new options: kill_timeout, reload, umask, init_code, do_help
+    * new functions: do_help, trace
+    * pid file is now written as the current user, then chowned to the target user
+    * pid file is now written when single-forking
+    * gid is calculated when not provided but the uid is, avoiding some
+      warnings
+
 0.000009  2012-04-19 SymKat <symkat@symkat.com>
     * Stole Moo's MANIFEST.SKIP
 
