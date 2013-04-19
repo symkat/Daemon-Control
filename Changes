@@ -1,4 +1,7 @@
 
+    * create dir for pid_file if it does not exist
+    * fix uninitialized warning in error when exec fails
+
 0.001000  2013-02-26  SymKat <symkat@symkat.com>
     * fixed a warning on "uninitialized value $called_with in substitution"
       (Kromg)
@@ -7,8 +10,9 @@
       (Karen Etheridge)
 
     * warn is used rather than printing to STDERR
-    * new options: kill_timeout, reload, umask, init_code, do_help
-    * new functions: do_help, trace
+    * new commands: help, reload
+    * new options: kill_timeout, umask, init_code, do_help
+    * new functions: do_help, do_reload, trace
     * pid file is now written as the current user, then chowned to the target user
     * pid file is now written when single-forking
     * gid is calculated when not provided but the uid is, avoiding some
