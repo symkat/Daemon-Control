@@ -382,8 +382,16 @@ sub do_stop {
 
     if ( $self->pid && $self->pid_running ) {
         foreach my $signal ( qw(TERM TERM INT KILL) ) {
+            $self->trace( "Sending $signal signal to pid ", $self->pid, "..." );
             kill $signal => $self->pid;
-            sleep $self->kill_timeout;
+
+            for (1..$self->kill_timeout)
+            {
+                # abort early if the process is now stopped
+                $self->trace('checking if pid ', $self->pid, ' is still running...');
+                last if not $self->pid_running;
+                sleep 1;
+            }
             last unless $self->pid_running;
         }
         if ( $self->pid_running ) {
