@@ -1,6 +1,9 @@
 
     * create dir for pid_file if it does not exist
     * fix uninitialized warning in error when exec fails
+    * 'stop' is now faster when kill_timeout is set to high values, by checking
+      every second if the daemon has terminated rather than waiting for the
+      full kill_timeout duration
 
 0.001000  2013-02-26  SymKat <symkat@symkat.com>
     * fixed a warning on "uninitialized value $called_with in substitution"
