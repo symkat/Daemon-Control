@@ -92,7 +92,7 @@ sub new {
 sub _set_uid_from_name {
     my ( $self, $name ) = @_;
     my $uid = getpwnam( $name );
-    die "Error: Couldn't get uid for non-existant user " . $self->user
+    die "Error: Couldn't get uid for non-existent user " . $self->user
         unless $uid;
     $self->trace( "Set UID => $uid" );
     $self->uid( $uid );
@@ -102,7 +102,7 @@ sub _set_uid_from_name {
 sub _set_gid_from_name {
     my ( $self, $name ) = @_;
     my $gid = getgrnam( $name );
-    die "Error: Couldn't get gid for non-existant group " . $self->group
+    die "Error: Couldn't get gid for non-existent group " . $self->group
         unless $gid;
     $self->trace( "Set GID => $gid" );
     $self->gid( $gid );
@@ -131,16 +131,21 @@ sub redirect_filehandles {
 
 sub _create_resource_dir {
     my ( $self ) = @_;
+    $self->_create_dir($self->resource_dir);
+}
 
-    return 0 unless $self->resource_dir;
+sub _create_dir {
+    my ( $self, $dir ) = @_;
 
-    if ( -d $self->resource_dir ) {
-        $self->trace( "Resource dir exists (" . $self->resource_dir . ")" );
+    return 0 unless $dir;
+
+    if ( -d $dir ) {
+        $self->trace( "Dir exists (" . $dir . ") - no need to create" );
         return 1;
     }
 
     my ( $created ) = make_path(
-        $self->resource_dir,
+        $dir,
         {
             uid => $self->uid,
             group => $self->gid,
@@ -155,14 +160,13 @@ sub _create_resource_dir {
         }
     }
 
-    if ( $created eq $self->resource_dir ) {
-        $self->trace( "Created resource dir (" . $self->resource_dir . ")" );
+    if ( $created eq $dir ) {
+        $self->trace( "Created dir (" . $dir . ")" );
         return 1;
     }
 
-    $self->trace( "_create_resource_dir() failed and I don't know why" );
+    $self->trace( "_create_dir() for $dir failed and I don't know why" );
     return 0;
-
 }
 
 sub _double_fork {
@@ -183,13 +187,12 @@ sub _double_fork {
             if ( $self->uid ) {
                 setuid( $self->uid );
 
-                # We cannot devine a username if one isn't set.
-                $ENV{USER} = $self->user if $self->user;
+                $ENV{USER} = $self->user || getpwuid($self->uid);
                 $ENV{HOME} = ((getpwuid($self->uid))[7]);
 
                 $self->trace( "setuid(" . $self->uid . ")" );
-                $self->trace( "\$ENV{HOME} => " . ((getpwuid($self->uid))[7]) );
-                $self->trace( "\$ENV{USER} => " . $self->user ) if $self->user;
+                $self->trace( "\$ENV{USER} => " . $ENV{USER} );
+                $self->trace( "\$ENV{HOME} => " . $ENV{HOME} );
             }
 
             if ( $self->umask ) {
@@ -243,19 +246,20 @@ sub _launch_program {
         $self->trace( "chdir(" . $self->directory . ")" );
     }
 
+    my @args = @{$self->program_args || [ ]};
+
     if ( ref $self->program eq 'CODE' ) {
-        $self->program->( $self, @{$self->program_args || []} );
+        $self->program->( $self, @args );
     } else {
-        exec ( $self->program, @{$self->program_args || [ ]} )
+        exec ( $self->program, @args )
             or die "Failed to exec " . $self->program . " "
-                . join( " ", @{$self->program_args} ) . ": $!";
+                . join( " ", @args ) . ": $!";
     }
     exit 0;
 }
 
 sub write_pid {
     my ( $self ) = @_;
-
 
     # Create the PID file as the user we currently are,
     # and change the permissions to our target UID/GID.
@@ -270,10 +274,15 @@ sub write_pid {
 
 sub _write_pid {
     my ( $self ) = @_;
+
+    my ($volume, $dir, $file) = File::Spec->splitpath($self->pid_file);
+    return 0 if not $self->_create_dir($dir);
+
     open my $sf, ">", $self->pid_file
         or die "Failed to write " . $self->pid_file . ": $!";
     print $sf $self->pid;
     close $sf;
+    $self->trace( "Wrote pid (" . $self->pid . ") to pid file (" . $self->pid_file . ")" );
     return $self;
 }
 
