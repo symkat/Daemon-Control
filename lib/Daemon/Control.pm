@@ -137,7 +137,8 @@ sub _create_resource_dir {
 sub _create_dir {
     my ( $self, $dir ) = @_;
 
-    return 0 unless $dir;
+    return 0 unless defined $dir;
+    return 1 unless length($dir);
 
     if ( -d $dir ) {
         $self->trace( "Dir exists (" . $dir . ") - no need to create" );

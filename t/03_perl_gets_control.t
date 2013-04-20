@@ -29,6 +29,6 @@ sub get_command_output {
 my $out;
 
 ok $out = get_command_output( "perl -I$ilib $file start" ), "Started perl daemon";
-ok $out !~ /FAILED/, "Code ref gets Daemon::Control instance.";
+unlike $out, qr/FAILED/, "Code ref gets Daemon::Control instance.";
 
 done_testing;
