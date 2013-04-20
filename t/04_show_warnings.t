@@ -32,7 +32,7 @@ my $out;
 
 ok $out = get_command_output( "perl -I$ilib $file show_warnings 2>&1" ), "Get warnings";
 
-ok $out eq do { local $/; <DATA> }, "Got warnings.";
+is $out, do { local $/; <DATA> }, "Got warnings.";
 
 done_testing;
 __DATA__
