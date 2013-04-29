@@ -5,6 +5,7 @@
       every second if the daemon has terminated rather than waiting for the
       full kill_timeout duration
     * new option: prereq_no_process
+    * stdout is flushed immediately when diagnostic output is printed
 
 0.001000  2013-02-26  SymKat <symkat@symkat.com>
     * fixed a warning on "uninitialized value $called_with in substitution"
