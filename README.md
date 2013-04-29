@@ -204,6 +204,22 @@ This directory will be created, and chowned to the user/group provided in
 
     $daemon->resource_dir( "/var/run/mydaemon" );
 
+## prereq\_no\_process -- EXPERIMENTAL
+
+This option is EXPERIMENTAL and defaults to OFF.
+
+If this is set, then the `ps` list will be checked at startup for any
+processes that look like the daemon to be started.  By default the pattern used
+is `/\b<program name>\b/`, but you can pass an override regexp in this field
+instead (to use the default pattern, just pass `prereq_no_process => 1`).
+If matching processes are found, those pids are output, and the daemon will not
+start.
+
+This may produce some false positives on your system, depending on what else is
+running on your system, but it may still be of some use, e.g. if you seem to
+have daemons left running where the associated pid file is getting deleted
+somehow.
+
 ## fork
 
 The mode to use for fork.  By default a double-fork will be used.

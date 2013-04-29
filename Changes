@@ -1,4 +1,5 @@
-
+0.001001  2013-04-29  SymKat <symkat@symkat.com>
+    * All 0.001001 changes brought to you by Karen Etheridge; Thanks, ether!
     * create dir for pid_file if it does not exist
     * fix uninitialized warning in error when exec fails
     * 'stop' is now faster when kill_timeout is set to high values, by checking
