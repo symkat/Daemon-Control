@@ -352,6 +352,7 @@ sub pretty_print {
 
     $color ||= "green"; # Green is no color.
     my $code = $self->color_map->{$color} ||= "32"; # Green is invalid.
+    local $| = 1;
     printf( "%-49s %30s\n", $self->name, "\033[$code" ."m[$message]\033[0m" );
 }
 
