@@ -996,6 +996,8 @@ Kaitlyn Parkhurst (SymKat) I<E<lt>symkat@symkat.comE<gt>> ( Blog: L<http://symka
 
 =item * Karen Etheridge (ether) I<E<lt>ether@cpan.orgE<gt>>
 
+=item * Ævar Arnfjörð Bjarmason (avar) I<E<lt>avar@cpan.orgE<gt>>
+
 =back
 
 =head2 SPONSORS
