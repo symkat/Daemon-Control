@@ -28,26 +28,26 @@ sub get_command_output {
 
 my $out;
 
-ok $out = get_command_output( "perl -I$ilib $file start" ), "Started perl daemon";
+ok $out = get_command_output( "$^X -I$ilib $file start" ), "Started perl daemon";
 like $out, qr/\[Started\]/, "Daemon started.";
-ok $out = get_command_output( "perl -I$ilib $file status" ), "Get status of perl daemon.";
+ok $out = get_command_output( "$^X -I$ilib $file status" ), "Get status of perl daemon.";
 like $out, qr/\[Running\]/, "Daemon running.";
 
 sleep 10;
 
-ok $out = get_command_output( "perl -I$ilib $file status" ), "Get status of perl daemon.";
+ok $out = get_command_output( "$^X -I$ilib $file status" ), "Get status of perl daemon.";
 like $out, qr/\[Not Running\]/, "Daemon not running";
 
 # Testing restart.
-ok $out = get_command_output( "perl -I$ilib $file start" ), "Started system daemon";
+ok $out = get_command_output( "$^X -I$ilib $file start" ), "Started system daemon";
 like $out, qr/\[Started\]/, "Daemon started for restarting.";
-ok $out = get_command_output( "perl -I$ilib $file status" ), "Get status of system daemon.";
+ok $out = get_command_output( "$^X -I$ilib $file status" ), "Get status of system daemon.";
 like $out, qr/\[Running\]/, "Daemon running for restarting.";
-ok $out = get_command_output( "perl -I$ilib $file restart" ), "Get status of system daemon.";
+ok $out = get_command_output( "$^X -I$ilib $file restart" ), "Get status of system daemon.";
 like $out, qr/\[Stopped\].*\[Started\]/s, "Daemon restarted.";
-ok $out = get_command_output( "perl -I$ilib $file status" ), "Get status of system daemon.";
+ok $out = get_command_output( "$^X -I$ilib $file status" ), "Get status of system daemon.";
 like $out, qr/\[Running\]/, "Daemon running after restart.";
-ok $out = get_command_output( "perl -I$ilib $file stop" ), "Get status of system daemon.";
+ok $out = get_command_output( "$^X -I$ilib $file stop" ), "Get status of system daemon.";
 like $out, qr/\[Stopped\]/, "Daemon stopped after restart.";
 
 done_testing;

@@ -17,7 +17,7 @@ if ( -f 't/bin/01_lsb_02.pl' ) { # Dist Directory.
 }
 
 
-open my $lf, "-|", "perl", "-I$ilib", $file, "get_init_file"
+open my $lf, "-|", $^X, "-I$ilib", $file, "get_init_file"
     or die "Failed to open pipe to $file: $!";
 my $content = do { local $/; <$lf> };
 close $lf;
