@@ -30,7 +30,7 @@ sub get_command_output {
 
 my $out;
 
-ok $out = get_command_output( "perl -I$ilib $file show_warnings 2>&1" ), "Get warnings";
+ok $out = get_command_output( "$^X -I$ilib $file show_warnings 2>&1" ), "Get warnings";
 
 is $out, do { local $/; <DATA> }, "Got warnings.";
 
