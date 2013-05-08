@@ -94,7 +94,7 @@ sub _set_uid_from_name {
     my ( $self, $name ) = @_;
     my $uid = getpwnam( $name );
     die "Error: Couldn't get uid for non-existent user " . $self->user
-        unless $uid;
+        unless defined $uid;
     $self->trace( "Set UID => $uid" );
     $self->uid( $uid );
 }
@@ -104,7 +104,7 @@ sub _set_gid_from_name {
     my ( $self, $name ) = @_;
     my $gid = getgrnam( $name );
     die "Error: Couldn't get gid for non-existent group " . $self->group
-        unless $gid;
+        unless defined $gid;
     $self->trace( "Set GID => $gid" );
     $self->gid( $gid );
 
