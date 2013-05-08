@@ -1,3 +1,5 @@
+    * Fix an encoding error in the POD resulting from Ævar Arnfjörð
+      Bjarmason contributing to the project.
     * Tests that invoke Perl now use $^X instead of the $PATH's perl.
 
 0.001001  2013-04-29  SymKat <symkat@symkat.com>
