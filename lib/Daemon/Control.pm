@@ -235,7 +235,9 @@ sub _fork {
     } elsif ( not defined $pid ) {
         warn "Cannot fork: $!";
     } else { # In the parent, $pid = child's PID, return it.
-        # Nothing
+        $self->pid( $pid );
+        $self->trace("Set PID => $pid" );
+        $self->write_pid;
     }
     return $self;
 }
