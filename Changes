@@ -1,3 +1,4 @@
+0.001002  2013-04-29  SymKat <symkat@symkat.com>
     * Due to checking for true values instead of define it was
       possible to start a daemon as root by setting uid/gid to 0/0,
       but not user/group to root/root, which would resolve to 0/0 and
