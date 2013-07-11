@@ -6,7 +6,7 @@
     * Fix an encoding error in the POD resulting from Ævar Arnfjörð
       Bjarmason contributing to the project.
     * Tests that invoke Perl now use $^X instead of the $PATH's perl.
-    * properly write the pid file in single fork mode (github#XXX)
+    * properly write the pid file in single fork mode (github#49)
 
 0.001001  2013-04-29  SymKat <symkat@symkat.com>
     * All 0.001001 changes brought to you by Karen Etheridge; Thanks, ether!
