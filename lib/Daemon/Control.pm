@@ -12,7 +12,7 @@ our $VERSION = '0.001002'; # 0.1.2
 $VERSION = eval $VERSION;
 
 my @accessors = qw(
-    pid color_map name program program_args directory
+    pid color_map name program program_args directory quiet
     uid path gid scan_name stdout_file stderr_file pid_file fork data
     lsb_start lsb_stop lsb_sdesc lsb_desc redirect_before_fork init_config
     kill_timeout umask resource_dir help init_code
@@ -69,6 +69,7 @@ sub new {
         color_map               => { red => 31, green => 32 },
         redirect_before_fork    => 1,
         kill_timeout            => 1,
+        quiet                   => 0,
         umask                   => 0,
     }, $class;
 
@@ -351,6 +352,8 @@ sub process_running {
 
 sub pretty_print {
     my ( $self, $message, $color ) = @_;
+
+    return if $self->quiet;
 
     $color ||= "green"; # Green is no color.
     my $code = $self->color_map->{$color} ||= "32"; # Green is invalid.
@@ -650,6 +653,7 @@ Write a program that describes the daemon:
         lsb_sdesc   => 'My Daemon Short',
         lsb_desc    => 'My Daemon controls the My Daemon daemon.',
         path        => '/home/symkat/etc/init.d/program',
+        quiet       => 0,
 
         program     => '/home/symkat/bin/program',
         program_args => [ '-a', 'orange', '--verbose' ],
@@ -906,6 +910,13 @@ the generated LSB init script.  See L<http://wiki.debian.org/LSBInitScripts>
 for more information.
 
     $daemon->lsb_desc( 'My program controls a thing that does a thing.' );
+
+=head2 quiet
+
+If this boolean flag is set to a true value all output from the init script
+(NOT your daemon) to STDOUT will be suppressed.
+
+    $daemon->quiet( 1 );
 
 =head1 METHODS
 
