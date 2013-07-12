@@ -286,6 +286,13 @@ for more information.
 
     $daemon->lsb_desc( 'My program controls a thing that does a thing.' );
 
+## quiet
+
+If this boolean flag is set to a true value all output from the init script
+(NOT your daemon) to STDOUT will be suppressed.
+
+    $daemon->quiet( 1 );
+
 # METHODS
 
 ## run
@@ -370,6 +377,7 @@ A function to dump the LSB compatible init script.  Used by do\_get\_init\_file.
 - Matt S. Trout (mst) _<mst@shadowcat.co.uk>_
 - Mike Doherty (doherty) _<doherty@cpan.org>_
 - Karen Etheridge (ether) _<ether@cpan.org>_
+- Ævar Arnfjörð Bjarmason (avar) _<avar@cpan.org>_
 
 ## SPONSORS
 

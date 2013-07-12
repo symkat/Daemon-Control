@@ -653,7 +653,6 @@ Write a program that describes the daemon:
         lsb_sdesc   => 'My Daemon Short',
         lsb_desc    => 'My Daemon controls the My Daemon daemon.',
         path        => '/home/symkat/etc/init.d/program',
-        quiet       => 0,
 
         program     => '/home/symkat/bin/program',
         program_args => [ '-a', 'orange', '--verbose' ],
