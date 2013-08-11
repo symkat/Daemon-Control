@@ -311,9 +311,9 @@ sub read_pid {
 }
 
 sub pid_running {
-    my ( $self ) = @_;
+    my ( $self, $pid ) = @_;
 
-    $self->read_pid;
+    $pid ||= $self->read_pid;
 
     return 0 unless $self->pid >= 1;
     return 0 unless kill 0, $self->pid;
@@ -422,22 +422,23 @@ sub do_stop {
     my ( $self ) = @_;
 
     $self->read_pid;
+    my $target_pid = $self->pid;
 
-    if ( $self->pid && $self->pid_running ) {
+    if ( $target_pid > 1 && $self->pid_running($target_pid) ) {
         foreach my $signal ( qw(TERM TERM INT KILL) ) {
-            $self->trace( "Sending $signal signal to pid ", $self->pid, "..." );
-            kill $signal => $self->pid;
+            $self->trace( "Sending $signal signal to pid $target_pid..." );
+            kill $signal => $target_pid;
 
             for (1..$self->kill_timeout)
             {
                 # abort early if the process is now stopped
-                $self->trace('checking if pid ', $self->pid, ' is still running...');
-                last if not $self->pid_running;
+                $self->trace("checking if pid $target_pid is still running...");
+                last if not $self->pid_running($target_pid);
                 sleep 1;
             }
-            last unless $self->pid_running;
+            last unless $self->pid_running($target_pid);
         }
-        if ( $self->pid_running ) {
+        if ( $self->pid_running($target_pid) ) {
             $self->pretty_print( "Failed to Stop", "red" );
             exit 1;
         }
