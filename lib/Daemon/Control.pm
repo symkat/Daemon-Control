@@ -428,8 +428,6 @@ sub do_stop {
     # Probably don't want to send anything to init(1).
     return unless $start_pid > 1;
 
-    my $current_pid = $self->read_pid;
-
     if ( $self->pid_running($start_pid) ) {
         SIGNAL:
         foreach my $signal ( qw(TERM TERM INT KILL) ) {
@@ -441,8 +439,7 @@ sub do_stop {
                 # abort early if the process is now stopped
                 $self->trace("checking if pid $start_pid is still running...");
                 last if not $self->pid_running($start_pid);
-                $current_pid = $self->read_pid;
-                last if $current_pid != $start_pid;
+                last if $self->read_pid != $start_pid;
                 sleep 1;
             }
             last unless $self->pid_running($start_pid);
@@ -460,7 +457,7 @@ sub do_stop {
     # it doesn't match what we started with.
 
     if ( $self->pid_file ) {
-      unlink($self->pid_file) if $current_pid == $start_pid;
+      unlink($self->pid_file) if $self->read_pid == $start_pid;
     }
 }
 
