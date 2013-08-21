@@ -422,23 +422,32 @@ sub do_stop {
     my ( $self ) = @_;
 
     $self->read_pid;
-    my $target_pid = $self->pid;
 
-    if ( $target_pid > 1 && $self->pid_running($target_pid) ) {
+    my $start_pid = $self->pid;
+
+    # Probably don't want to send anything to init(1).
+    return unless $start_pid > 1;
+
+    my $current_pid = $self->read_pid;
+
+    if ( $self->pid_running($start_pid) ) {
+        SIGNAL:
         foreach my $signal ( qw(TERM TERM INT KILL) ) {
-            $self->trace( "Sending $signal signal to pid $target_pid..." );
-            kill $signal => $target_pid;
+            $self->trace( "Sending $signal signal to pid $start_pid..." );
+            kill $signal => $start_pid;
 
             for (1..$self->kill_timeout)
             {
                 # abort early if the process is now stopped
-                $self->trace("checking if pid $target_pid is still running...");
-                last if not $self->pid_running($target_pid);
+                $self->trace("checking if pid $start_pid is still running...");
+                last if not $self->pid_running($start_pid);
+                $current_pid = $self->read_pid;
+                last if $current_pid != $start_pid;
                 sleep 1;
             }
-            last unless $self->pid_running($target_pid);
+            last unless $self->pid_running($start_pid);
         }
-        if ( $self->pid_running($target_pid) ) {
+        if ( $self->pid_running($start_pid) ) {
             $self->pretty_print( "Failed to Stop", "red" );
             exit 1;
         }
@@ -447,8 +456,12 @@ sub do_stop {
         $self->pretty_print( "Not Running", "red" );
     }
 
-    # Clean up the PID file on stop.
-    unlink($self->pid_file) if $self->pid_file;
+    # Clean up the PID file on stop, unless
+    # it doesn't match what we started with.
+
+    if ( $self->pid_file ) {
+      unlink($self->pid_file) if $current_pid == $start_pid;
+    }
 }
 
 sub do_restart {
