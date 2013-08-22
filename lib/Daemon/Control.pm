@@ -311,9 +311,9 @@ sub read_pid {
 }
 
 sub pid_running {
-    my ( $self ) = @_;
+    my ( $self, $pid ) = @_;
 
-    $self->read_pid;
+    $pid ||= $self->read_pid;
 
     return 0 unless $self->pid >= 1;
     return 0 unless kill 0, $self->pid;
@@ -422,22 +422,27 @@ sub do_stop {
     my ( $self ) = @_;
 
     $self->read_pid;
+    my $start_pid = $self->pid;
 
-    if ( $self->pid && $self->pid_running ) {
+    # Probably don't want to send anything to init(1).
+    return unless $start_pid > 1;
+
+    if ( $self->pid_running($start_pid) ) {
+        SIGNAL:
         foreach my $signal ( qw(TERM TERM INT KILL) ) {
-            $self->trace( "Sending $signal signal to pid ", $self->pid, "..." );
-            kill $signal => $self->pid;
+            $self->trace( "Sending $signal signal to pid $start_pid..." );
+            kill $signal => $start_pid;
 
             for (1..$self->kill_timeout)
             {
                 # abort early if the process is now stopped
-                $self->trace('checking if pid ', $self->pid, ' is still running...');
-                last if not $self->pid_running;
+                $self->trace("checking if pid $start_pid is still running...");
+                last if not $self->pid_running($start_pid);
                 sleep 1;
             }
-            last unless $self->pid_running;
+            last unless $self->pid_running($start_pid);
         }
-        if ( $self->pid_running ) {
+        if ( $self->pid_running($start_pid) ) {
             $self->pretty_print( "Failed to Stop", "red" );
             exit 1;
         }
@@ -446,8 +451,14 @@ sub do_stop {
         $self->pretty_print( "Not Running", "red" );
     }
 
-    # Clean up the PID file on stop.
-    unlink($self->pid_file) if $self->pid_file;
+    # Clean up the PID file on stop, unless the pid
+    # doesn't match $start_pid (perhaps a standby
+    # worker stepped in to take over from the one
+    # that was just terminated).
+
+    if ( $self->pid_file ) {
+      unlink($self->pid_file) if $self->read_pid == $start_pid;
+    }
 }
 
 sub do_restart {
