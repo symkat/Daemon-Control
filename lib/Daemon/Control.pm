@@ -422,7 +422,6 @@ sub do_stop {
     my ( $self ) = @_;
 
     $self->read_pid;
-
     my $start_pid = $self->pid;
 
     # Probably don't want to send anything to init(1).
@@ -439,7 +438,6 @@ sub do_stop {
                 # abort early if the process is now stopped
                 $self->trace("checking if pid $start_pid is still running...");
                 last if not $self->pid_running($start_pid);
-                last if $self->read_pid != $start_pid;
                 sleep 1;
             }
             last unless $self->pid_running($start_pid);
@@ -453,8 +451,10 @@ sub do_stop {
         $self->pretty_print( "Not Running", "red" );
     }
 
-    # Clean up the PID file on stop, unless
-    # it doesn't match what we started with.
+    # Clean up the PID file on stop, unless the pid
+    # doesn't match $start_pid (perhaps a standby
+    # worker stepped in to take over from the one
+    # that was just terminated).
 
     if ( $self->pid_file ) {
       unlink($self->pid_file) if $self->read_pid == $start_pid;
