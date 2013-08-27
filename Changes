@@ -1,3 +1,6 @@
+0.001004  2013-08-27 SymKat <symkat@symkat.com>
+    * Abort the kill loop when PID changes; Thanks, atomicstac
+
 0.001003  2013-06-12  SymKat <symkat@symkat.com>
     * Add quiet accessor to supress pretty_print (github#51)
 
