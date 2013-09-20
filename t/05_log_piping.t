@@ -70,6 +70,6 @@ undef $stdout_temp_file;
 undef $stderr_temp_file;
 
 is( $captured_stdout, 'I am in here', 'test stdout_pipe' );
-is( $captured_stderr, 'Te Occidere Possunt Sed Te Edere Non Possunt Nefas Est', 'test stdout_pipe' );
+is( $captured_stderr, 'Te Occidere Possunt Sed Te Edere Non Possunt Nefas Est', 'test stderr_pipe' );
 
 done_testing;
