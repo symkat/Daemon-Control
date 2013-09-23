@@ -31,15 +31,12 @@ my $stderr_temp_filename = $stderr_temp_file->filename;
 
 ok(system("$^X -I$ilib $file start $pid_temp_filename $stdout_temp_filename $stderr_temp_filename") == 0, "Started perl daemon");
 
-# sleep 2 seconds, checking each 0.1 second for output from the daemon
-# hopefully that's long enough to start up and finish. the alternative
-# is that we actually use pid files, etc
+# sleep 2 seconds, during which perform a check each 0.1 second to determine
+# whether the test daemon is still running.
 
 my $pid;
 
 foreach (1 .. 20) {
-    # -f $stdout_temp_filename && -s _ and -f $stderr_temp_filename && -s _ and last;
-
     $pid_temp_file->seek(0, 0);
 
     chomp( $pid = <$pid_temp_file> );

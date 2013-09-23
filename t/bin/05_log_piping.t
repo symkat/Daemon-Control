@@ -9,6 +9,7 @@ if ( @ARGV == 4 ) {
   ($pid_file, $stdout_temp_file, $stderr_temp_file) = splice(@ARGV, -3);
 }
 
+die "bad pid_file [$pid_file]" unless $pid_file and -f $pid_file;
 die "bad stdout_temp_file [$stdout_temp_file]" unless $stdout_temp_file and -f $stdout_temp_file;
 die "bad stderr_temp_file [$stderr_temp_file]" unless $stderr_temp_file and -f $stderr_temp_file;
 
@@ -30,5 +31,4 @@ Daemon::Control->new({
     stderr_pipe => "cat > $stderr_temp_file",
 
     fork        => 2,
-
 })->run;
