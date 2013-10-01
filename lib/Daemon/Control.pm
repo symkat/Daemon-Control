@@ -829,23 +829,23 @@ passed to redirect the filehandles.
 
 =head2 stdout_file
 
-If provided stdout will be redirected to the given file.  This is only supported
-in double fork mode.
+If provided, STDOUT will be redirected to the given file. This is only
+supported in double fork mode.
 
     $daemon->stdout_file( "/tmp/mydaemon.stdout" );
 
 =head2 stderr_file
 
-If provided stderr will be redirected to the given file.  This is only supported
-in double fork mode.
+If provided, STDERR will be redirected to the given file. This is only
+supported in double fork mode.
 
     $daemon->stderr_file( "/tmp/mydaemon.stderr" );
 
 =head2 stdout_pipe
 
-If provided, stdout will be redirected to a pipe that is opened based on the
-argument/s provided. Accepts either strings or array-refs, which will be passed
-as a list to open(). As with stdout_file, this is only supported in double fork
+If provided, STDOUT will be redirected to a pipe based on the given parameter.
+Accepts either a string or an array-ref, which will be passed in list context
+to C<open>. As with C<->stdout_file>, this is only supported in double fork
 mode.
 
     $daemon->stdout_pipe( "gzip > /var/log/daemon.log.gz" );
@@ -858,9 +858,9 @@ mode.
 
 =head2 stderr_pipe
 
-If provided, stderr will be redirected to a pipe that is opened based on the
-argument/s provided. Accepts either strings or array-refs, which will be passed
-as a list to open(). As with stderr_file, this is only supported in double fork
+If provided, STDERR will be redirected to a pipe based on the given parameter.
+Accepts either a string or an array-ref, which will be passed in list context
+to C<open>. As with C<->stderr_file>, this is only supported in double fork
 mode.
 
     $daemon->stderr_pipe( "gzip > /var/log/daemon_errors.log.gz" );
