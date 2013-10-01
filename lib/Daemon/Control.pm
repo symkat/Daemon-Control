@@ -12,11 +12,10 @@ our $VERSION = '0.001004'; # 0.1.4
 $VERSION = eval $VERSION;
 
 my @accessors = qw(
-    pid color_map name program program_args directory quiet
-    uid path gid scan_name stdout_file stderr_file pid_file fork data
-    lsb_start lsb_stop lsb_sdesc lsb_desc redirect_before_fork init_config
-    kill_timeout umask resource_dir help init_code
-    prereq_no_process
+    pid color_map name program program_args directory quiet uid path gid
+    scan_name stdout_file stderr_file stdout_pipe stderr_pipe pid_file fork
+    data lsb_start lsb_stop lsb_sdesc lsb_desc redirect_before_fork init_config
+    kill_timeout umask resource_dir help init_code prereq_no_process
 );
 
 my $cmd_opt = "[start|stop|restart|reload|status|show_warnings|get_init_file|help]";
@@ -77,6 +76,12 @@ sub new {
         if ( exists $args->{$accessor} ) {
             $self->{$accessor} = delete $args->{$accessor};
         }
+
+        if ( $accessor eq 'stdout_pipe' or $accessor eq 'stderr_pipe' ) {
+            die "Bad argument '$accessor': must be either a string or an array-ref of strings!"
+                unless ( !ref($self->{$accessor}) or ref($self->{$accessor}) eq 'ARRAY' );
+        }
+
     }
 
     # Set the user/groups.
@@ -122,12 +127,25 @@ sub redirect_filehandles {
         $self->trace( "STDOUT redirected to $file" );
 
     }
+    elsif ( $self->stdout_pipe ) {
+        my @stdout_pipe = ref($self->stdout_pipe) ? @{ $self->stdout_pipe } : $self->stdout_pipe;
+        open STDOUT, '|-', @stdout_pipe
+            or die "Failed to open STDOUT to pipe @stdout_pipe: $!";
+        $self->trace( "STDOUT redirected to pipe @stdout_pipe" );
+    }
+
     if ( $self->stderr_file ) {
         my $file = $self->stderr_file;
         $file = $file eq '/dev/null' ? File::Spec->devnull : $file;
         open STDERR, ">>", $file
             or die "Failed to open STDERR to $file: $!";
         $self->trace( "STDERR redirected to $file" );
+    }
+    elsif ( $self->stderr_pipe ) {
+        my @stderr_pipe = ref($self->stderr_pipe) ? @{ $self->stderr_pipe } : $self->stderr_pipe;
+        open STDERR, '|-', @stderr_pipe
+            or die "Failed to open STDERR to pipe @stderr_pipe: $!";
+        $self->trace( "STDERR redirected to pipe @stderr_pipe" );
     }
 }
 
@@ -811,17 +829,47 @@ passed to redirect the filehandles.
 
 =head2 stdout_file
 
-If provided stdout will be redirected to the given file.  This is only supported
-in double fork mode.
+If provided, STDOUT will be redirected to the given file. This is only
+supported in double fork mode.
 
     $daemon->stdout_file( "/tmp/mydaemon.stdout" );
 
 =head2 stderr_file
 
-If provided stderr will be redirected to the given file.  This is only supported
-in double fork mode.
+If provided, STDERR will be redirected to the given file. This is only
+supported in double fork mode.
 
     $daemon->stderr_file( "/tmp/mydaemon.stderr" );
+
+=head2 stdout_pipe
+
+If provided, STDOUT will be redirected to a pipe based on the given parameter.
+Accepts either a string or an array-ref, which will be passed in list context
+to C<open>. As with C<->stdout_file>, this is only supported in double fork
+mode.
+
+    $daemon->stdout_pipe( "gzip > /var/log/daemon.log.gz" );
+
+    $daemon->stdout_pipe([
+        '/usr/sbin/cronolog',
+        '--symlink=/var/log/daemon.log',
+        '/var/log/daemon-%F.log',
+    ]);
+
+=head2 stderr_pipe
+
+If provided, STDERR will be redirected to a pipe based on the given parameter.
+Accepts either a string or an array-ref, which will be passed in list context
+to C<open>. As with C<->stderr_file>, this is only supported in double fork
+mode.
+
+    $daemon->stderr_pipe( "gzip > /var/log/daemon_errors.log.gz" );
+
+    $daemon->stderr_pipe([
+        '/usr/sbin/cronolog',
+        '--symlink=/var/log/daemon_errors.log',
+        '/var/log/daemon_errors-%F.log',
+    ]);
 
 =head2 pid_file
 
