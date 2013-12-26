@@ -22,7 +22,7 @@ Write a program that describes the daemon:
     use strict;
     use Daemon::Control;
 
-    Daemon::Control->new({
+    Daemon::Control->new(
         name        => "My Daemon",
         lsb_start   => '$syslog $remote_fs',
         lsb_stop    => '$syslog',
@@ -39,7 +39,7 @@ Write a program that describes the daemon:
 
         fork        => 2,
 
-    })->run;
+    )->run;
 
 You can then call the program:
 
@@ -51,7 +51,7 @@ You can also make an LSB compatible init script:
 
 # CONSTRUCTOR
 
-The constructor takes the following arguments.
+The constructor takes the following arguments as a list or a hash ref.
 
 ## name
 
@@ -387,7 +387,7 @@ Parts of this code were paid for by
 
 # COPYRIGHT
 
-Copyright (c) 2012 the Daemon::Control ["AUTHOR"](#AUTHOR), ["CONTRIBUTORS"](#CONTRIBUTORS), and ["SPONSORS"](#SPONSORS) as listed above.
+Copyright (c) 2012 the Daemon::Control ["AUTHOR"](#author), ["CONTRIBUTORS"](#contributors), and ["SPONSORS"](#sponsors) as listed above.
 
 # LICENSE
 

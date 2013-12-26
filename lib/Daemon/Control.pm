@@ -62,7 +62,9 @@ sub group {
 }
 
 sub new {
-    my ( $class, $args ) = @_;
+    my ( $class, @in ) = @_;
+
+    my $args = ref $in[0] eq 'HASH' ? $in[0] : { @in };
 
     # Create the object with defaults.
     my $self = bless {
@@ -657,7 +659,7 @@ Write a program that describes the daemon:
     use strict;
     use Daemon::Control;
 
-    Daemon::Control->new({
+    Daemon::Control->new(
         name        => "My Daemon",
         lsb_start   => '$syslog $remote_fs',
         lsb_stop    => '$syslog',
@@ -674,7 +676,7 @@ Write a program that describes the daemon:
 
         fork        => 2,
 
-    })->run;
+    )->run;
 
 You can then call the program:
 
@@ -686,7 +688,7 @@ You can also make an LSB compatible init script:
 
 =head1 CONSTRUCTOR
 
-The constructor takes the following arguments.
+The constructor takes the following arguments as a list or a hash ref.
 
 =head2 name
 
