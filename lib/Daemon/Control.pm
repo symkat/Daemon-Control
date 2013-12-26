@@ -16,7 +16,7 @@ my @accessors = qw(
     uid path gid scan_name stdout_file stderr_file pid_file fork data
     lsb_start lsb_stop lsb_sdesc lsb_desc redirect_before_fork init_config
     kill_timeout umask resource_dir help init_code
-    prereq_no_process
+    prereq_no_process foreground
 );
 
 my $cmd_opt = "[start|stop|restart|reload|status|show_warnings|get_init_file|help]";
@@ -73,6 +73,7 @@ sub new {
         kill_timeout            => 1,
         quiet                   => 0,
         umask                   => 0,
+        foreground              => 0,
     }, $class;
 
     for my $accessor ( @accessors ) {
@@ -84,6 +85,12 @@ sub new {
     # Set the user/groups.
     $self->user(delete $args->{user}) if exists $args->{user};
     $self->group(delete $args->{group}) if exists $args->{group};
+
+    # Shortcut caused by setting foreground or using the ENV to do it.
+    if ( ( $self->foreground == 1 ) || ( $ENV{DC_FOREGROUND} ) ) {
+        $self->fork( 0 );
+        $self->quiet( 1 );
+    }
 
     die "Unknown arguments to the constructor: " . join( " ", keys %$args )
         if keys( %$args );
@@ -228,6 +235,8 @@ sub _double_fork {
     return $self;
 }
 
+sub _foreground { shift->_launch_program } 
+
 sub _fork {
     my ( $self ) = @_;
     my $pid = fork();
@@ -262,7 +271,7 @@ sub _launch_program {
             or die "Failed to exec " . $self->program . " "
                 . join( " ", @args ) . ": $!";
     }
-    exit 0;
+    return 0;
 }
 
 sub write_pid {
@@ -365,6 +374,15 @@ sub pretty_print {
 
 # Callable Functions
 
+sub do_foreground {
+    my ( $self ) = @_;
+
+    # Short cut to...
+    $self->fork( 0 );
+    $self->quiet( 1 );
+    return $self->do_start;
+}
+
 sub do_start {
     my ( $self ) = @_;
 
@@ -398,9 +416,10 @@ sub do_start {
 
     $self->_create_resource_dir;
 
-    $self->fork( 2 ) unless $self->fork;
+    $self->fork( 2 ) unless defined $self->fork;
     $self->_double_fork if $self->fork == 2;
     $self->_fork if $self->fork == 1;
+    $self->_foreground if $self->fork == 0;
     $self->pretty_print( "Started" );
     return 0;
 }
@@ -585,7 +604,7 @@ sub run_command {
         $self->trace( "Implicit GID => $gid" );
     }
     
-    my $called_with = $arg;
+    my $called_with = $arg || "help";
     $called_with =~ s/^[-]+//g; # Allow people to do --command too.
 
     my $action = "do_" . ($called_with ? $called_with : "" );
@@ -895,6 +914,15 @@ and do all that fun stuff.  This mode is recommended when the program you want
 to control has its own daemonizing code.  It is important to note that the PID
 file should be set to whatever PID file is used by the daemon.
 
+In no-fork mode, <Cfork(0)>, the program is run in the foreground.  By default
+quiet is still turned off, so status updates will be shown on the screen such
+as that the daemon started.  A shortcut to turn status off and go into foreground
+mode is C<foreground> being set to 1, or C<DC_FOREGROUND> being set as an
+environment variable.  Additionally, calling C<foreground> instead of C<start> will
+override the forking mode at run-time.
+    
+    $daemon->fork( 0 );
+
     $daemon->fork( 1 );
 
     $daemon->fork( 2 ); # Default
@@ -979,6 +1007,15 @@ Is called when start is given as an argument.  Starts the forking and
 exits. Called by:
 
     /usr/bin/my_program_launcher.pl start
+
+=head2 do_foreground
+
+Is called when B<foreground> is given as an argument.  Starts the 
+program or code reference and stays in the foreground -- no forking
+is done, regardless of the compile-time arguments.  Additionally,
+turns C<quiet> on to avoid showing M<Daemon::Control> output.
+
+    /usr/bin/my_program_launcher.pl foreground
 
 =head2 do_stop
 

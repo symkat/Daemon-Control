@@ -2,6 +2,12 @@
     * New method added: run_command, allows multiple instances of D::C
       in the same script.  Accepts the action as an argument and returns
       the exit code the user should exit with.
+    * do_foreground added to allow running the code ref or program w/o forking
+    * DC_FOREGROUND env will force foreground, regardless of compile-time settings
+    * foreground added to constructor -- shortcut to fork => 0, quiet => 1
+    * Calling the script without an argument results in the syntax being displayed
+    * Stray exit removed for run_command
+    * Updated documentation
 
 0.001004  2013-08-27 SymKat <symkat@symkat.com>
     * Abort the kill loop when PID changes; Thanks, atomicstac

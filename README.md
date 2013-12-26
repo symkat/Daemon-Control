@@ -247,6 +247,16 @@ and do all that fun stuff.  This mode is recommended when the program you want
 to control has its own daemonizing code.  It is important to note that the PID
 file should be set to whatever PID file is used by the daemon.
 
+In no-fork mode, <Cfork(0)>, the program is run in the foreground.  By default
+quiet is still turned off, so status updates will be shown on the screen such
+as that the daemon started.  A shortcut to turn status off and go into foreground
+mode is `foreground` being set to 1, or `DC_FOREGROUND` being set as an
+environment variable.  Additionally, calling `foreground` instead of `start` will
+override the forking mode at run-time.
+    
+
+    $daemon->fork( 0 );
+
     $daemon->fork( 1 );
 
     $daemon->fork( 2 ); # Default
@@ -331,6 +341,15 @@ Is called when start is given as an argument.  Starts the forking and
 exits. Called by:
 
     /usr/bin/my_program_launcher.pl start
+
+## do\_foreground
+
+Is called when __foreground__ is given as an argument.  Starts the 
+program or code reference and stays in the foreground -- no forking
+is done, regardless of the compile-time arguments.  Additionally,
+turns `quiet` on to avoid showing M<Daemon::Control> output.
+
+    /usr/bin/my_program_launcher.pl foreground
 
 ## do\_stop
 
