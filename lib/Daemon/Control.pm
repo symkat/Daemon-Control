@@ -379,7 +379,7 @@ sub do_start {
         if (@pids)
         {
             $self->pretty_print( 'Duplicate Running? (pid ' . join(', ', @pids) . ')', "red" );
-            exit 1;
+            return  1;
         }
     }
 
@@ -393,7 +393,7 @@ sub do_start {
     $self->read_pid;
     if ( $self->pid && $self->pid_running ) {
         $self->pretty_print( "Duplicate Running", "red" );
-        exit 1;
+        return 1;
     }
 
     $self->_create_resource_dir;
@@ -402,6 +402,7 @@ sub do_start {
     $self->_double_fork if $self->fork == 2;
     $self->_fork if $self->fork == 1;
     $self->pretty_print( "Started" );
+    return 0;
 }
 
 sub do_show_warnings {
@@ -427,7 +428,7 @@ sub do_stop {
     my $start_pid = $self->pid;
 
     # Probably don't want to send anything to init(1).
-    return unless $start_pid > 1;
+    return 1 unless $start_pid > 1;
 
     if ( $self->pid_running($start_pid) ) {
         SIGNAL:
@@ -446,7 +447,7 @@ sub do_stop {
         }
         if ( $self->pid_running($start_pid) ) {
             $self->pretty_print( "Failed to Stop", "red" );
-            exit 1;
+            return 1;
         }
         $self->pretty_print( "Stopped" );
     } else {
@@ -461,6 +462,7 @@ sub do_stop {
     if ( $self->pid_file ) {
       unlink($self->pid_file) if $self->read_pid == $start_pid;
     }
+    return 0;
 }
 
 sub do_restart {
@@ -471,6 +473,7 @@ sub do_restart {
         $self->do_stop;
     }
     $self->do_start;
+    return 0;
 }
 
 sub do_status {
@@ -479,8 +482,10 @@ sub do_status {
 
     if ( $self->pid && $self->pid_running ) {
         $self->pretty_print( "Running" );
+        return 0;
     } else {
         $self->pretty_print( "Not Running", "red" );
+        return 3;
     }
 }
 
@@ -491,13 +496,16 @@ sub do_reload {
     if ( $self->pid && $self->pid_running  ) {
         kill "SIGHUP", $self->pid;
         $self->pretty_print( "Reloaded" );
+        return 0;
     } else {
         $self->pretty_print( "Not Running", "red" );
+        return 1;
     }
 }
 
 sub do_get_init_file {
     shift->dump_init_script;
+    return 0;
 }
 
 sub do_help {
@@ -505,6 +513,7 @@ sub do_help {
 
     print "Syntax: $0 $cmd_opt\n\n";
     print $self->help if $self->help;
+    return 0;
 }
 
 sub dump_init_script {
@@ -553,10 +562,11 @@ sub run_template {
     return $content;
 }
 
-# Application Code.
-sub run {
-    my ( $self ) = @_;
 
+
+sub run_command {
+    my ( $self, $arg ) = @_;
+    
     # Error Checking.
     if ( ! $self->program ) {
         die "Error: program must be defined.";
@@ -568,30 +578,33 @@ sub run {
         die "Error: name must be defined.";
     }
 
+    # Grab the GID if we have a UID but no GID.
     if ( $self->uid && ! $self->gid ) {
         my ( $gid ) = ( (getpwuid( $self->uid ))[3] );
         $self->gid( $gid );
         $self->trace( "Implicit GID => $gid" );
     }
-
-    my $called_with;
-    if (@ARGV) {
-        $called_with = shift @ARGV;
-        $called_with =~ s/^[-]+//g; # Allow people to do --command too.
-    }
+    
+    my $called_with = $arg;
+    $called_with =~ s/^[-]+//g; # Allow people to do --command too.
 
     my $action = "do_" . ($called_with ? $called_with : "" );
 
     my $allowed_actions = "Must be called with an action: $cmd_opt";
 
     if ( $self->can($action) ) {
-        $self->$action;
+        return $self->$action;
     } elsif ( ! $called_with  ) {
         die $allowed_actions
     } else {
         die "Error: undefined action $called_with.  $allowed_actions";
     }
-    exit 0;
+
+}
+
+# Application Code.
+sub run {
+    shift->run_command( @ARGV );
 }
 
 sub trace {
@@ -678,6 +691,16 @@ Write a program that describes the daemon:
 
     )->run;
 
+By default C<run> will use @ARGV for the action, and exit with an LSB compatible
+exit code.  For finer control, you can use C<run_command>, which will return
+the exit code, and accepts the action as an argument.  This enables more programatic
+control, as well as running multiple instances of M<Daemon::Control> from one script.
+
+    my $daemon = Daemon::Control->new(
+        ...
+    );
+    my $exit = $daemon->run_command(“start”);
+
 You can then call the program:
 
     /home/symkat/etc/init.d/program start
@@ -685,6 +708,8 @@ You can then call the program:
 You can also make an LSB compatible init script:
 
     /home/symkat/etc/init.d/program get_init_file > /etc/init.d/program
+
+
 
 =head1 CONSTRUCTOR
 
@@ -932,12 +957,21 @@ If this boolean flag is set to a true value all output from the init script
 
 =head1 METHODS
 
+=head2 run_command
+
+This function will process an action on the Daemon::Control instance.
+Valid arguments are those which a C<do_> method exists for, such as 
+B<start>, B<stop>, B<restart>.  Returns the LSB exit code for the
+action processed.
+
 =head2 run
 
 This will make your program act as an init file, accepting input from
-the command line.  Run will exit with either 1 or 0, following LSB files on
-exiting.  As such no code should be used after ->run is called.  Any code
-in your file should be before this.
+the command line.  Run will exit with 0 for success and uses LSB exit
+codes.  As such no code should be used after ->run is called.  Any code
+in your file should be before this.  This is a shortcut for 
+
+    exit Daemon::Control->new(...)->run_command( @ARGV );
 
 =head2 do_start
 

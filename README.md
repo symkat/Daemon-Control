@@ -41,6 +41,16 @@ Write a program that describes the daemon:
 
     )->run;
 
+By default `run` will use @ARGV for the action, and exit with an LSB compatible
+exit code.  For finer control, you can use `run_command`, which will return
+the exit code, and accepts the action as an argument.  This enables more programatic
+control, as well as running multiple instances of M<Daemon::Control> from one script.
+
+    my $daemon = Daemon::Control->new(
+        ...
+    );
+    my $exit = $daemon->run_command(“start”);
+
 You can then call the program:
 
     /home/symkat/etc/init.d/program start
@@ -48,6 +58,10 @@ You can then call the program:
 You can also make an LSB compatible init script:
 
     /home/symkat/etc/init.d/program get_init_file > /etc/init.d/program
+
+
+
+
 
 # CONSTRUCTOR
 
@@ -295,12 +309,21 @@ If this boolean flag is set to a true value all output from the init script
 
 # METHODS
 
+## run\_command
+
+This function will process an action on the Daemon::Control instance.
+Valid arguments are those which a `do_` method exists for, such as 
+__start__, __stop__, __restart__.  Returns the LSB exit code for the
+action processed.
+
 ## run
 
 This will make your program act as an init file, accepting input from
-the command line.  Run will exit with either 1 or 0, following LSB files on
-exiting.  As such no code should be used after ->run is called.  Any code
-in your file should be before this.
+the command line.  Run will exit with 0 for success and uses LSB exit
+codes.  As such no code should be used after ->run is called.  Any code
+in your file should be before this.  This is a shortcut for 
+
+    exit Daemon::Control->new(...)->run_command( @ARGV );
 
 ## do\_start
 

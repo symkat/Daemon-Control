@@ -1,4 +1,7 @@
     * Constructor now accepts a list as well as a hashref
+    * New method added: run_command, allows multiple instances of D::C
+      in the same script.  Accepts the action as an argument and returns
+      the exit code the user should exit with.
 
 0.001004  2013-08-27 SymKat <symkat@symkat.com>
     * Abort the kill loop when PID changes; Thanks, atomicstac
