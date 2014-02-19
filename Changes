@@ -1,3 +1,4 @@
+0.001005  2014-02-19 SymKat <symkat@symkat.com>
     * Constructor now accepts a list as well as a hashref
     * New method added: run_command, allows multiple instances of D::C
       in the same script.  Accepts the action as an argument and returns
