@@ -713,7 +713,7 @@ Write a program that describes the daemon:
 By default C<run> will use @ARGV for the action, and exit with an LSB compatible
 exit code.  For finer control, you can use C<run_command>, which will return
 the exit code, and accepts the action as an argument.  This enables more programatic
-control, as well as running multiple instances of M<Daemon::Control> from one script.
+control, as well as running multiple instances of L<Daemon::Control> from one script.
 
     my $daemon = Daemon::Control->new(
         ...
@@ -1013,7 +1013,7 @@ exits. Called by:
 Is called when B<foreground> is given as an argument.  Starts the 
 program or code reference and stays in the foreground -- no forking
 is done, regardless of the compile-time arguments.  Additionally,
-turns C<quiet> on to avoid showing M<Daemon::Control> output.
+turns C<quiet> on to avoid showing L<Daemon::Control> output.
 
     /usr/bin/my_program_launcher.pl foreground
 
