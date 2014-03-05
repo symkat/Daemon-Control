@@ -691,7 +691,7 @@ Write a program that describes the daemon:
     use strict;
     use Daemon::Control;
 
-    Daemon::Control->new(
+    exit Daemon::Control->new(
         name        => "My Daemon",
         lsb_start   => '$syslog $remote_fs',
         lsb_stop    => '$syslog',
