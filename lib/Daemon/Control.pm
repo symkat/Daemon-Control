@@ -16,7 +16,7 @@ my @accessors = qw(
     uid path gid scan_name stdout_file stderr_file pid_file fork data
     lsb_start lsb_stop lsb_sdesc lsb_desc redirect_before_fork init_config
     kill_timeout umask resource_dir help init_code
-    prereq_no_process foreground
+    prereq_no_process foreground use_supplementary_groups
 );
 
 my $cmd_opt = "[start|stop|restart|reload|status|show_warnings|get_init_file|help]";
@@ -68,12 +68,13 @@ sub new {
 
     # Create the object with defaults.
     my $self = bless {
-        color_map               => { red => 31, green => 32 },
-        redirect_before_fork    => 1,
-        kill_timeout            => 1,
-        quiet                   => 0,
-        umask                   => 0,
-        foreground              => 0,
+        color_map                => { red => 31, green => 32 },
+        redirect_before_fork     => 1,
+        kill_timeout             => 1,
+        quiet                    => 0,
+        umask                    => 0,
+        foreground               => 0,
+        use_supplementary_groups => 0,
     }, $class;
 
     for my $accessor ( @accessors ) {
@@ -118,6 +119,40 @@ sub _set_gid_from_name {
     $self->trace( "Set GID => $gid" );
     $self->gid( $gid );
 
+}
+
+sub _get_groups_for_user {
+    my ( $self, $username ) = @_;
+    my @groups;
+
+    while ( my ( $name, $password, $gid, $users ) = getgrent ) {
+        if ( grep { $_ eq $username } split /\s/, $users ) {
+            push @groups, $gid;
+        }
+    }
+
+    return \@groups;
+}
+
+sub _set_supplementary_groups {
+    my ( $self, $uid, $gid ) = @_;
+
+    my $pw_name = getpwuid( $uid );
+    return unless defined $pw_name;  # no entry => no groups
+
+    my $groups_aref = $self->_get_groups_for_user( $pw_name );
+
+    unless ( grep { $_ == $gid } @$groups_aref ) {
+        unshift @$groups_aref, $gid;
+    }
+
+    my $groups_str = join( ' ' => $gid, @$groups_aref );
+
+    local $!;
+    $) = $groups_str;
+    die "Error: Couldn't set groups $groups_str: $!" if $!;
+
+    $self->trace( '$EFFECTIVE_GROUP_ID = ' . $groups_str );
 }
 
 sub redirect_filehandles {
@@ -197,6 +232,10 @@ sub _double_fork {
             }
 
             if ( $self->uid ) {
+                if ( $self->use_supplementary_groups ) {
+                    $self->_set_supplementary_groups( $self->uid, $self->gid );
+                }
+
                 setuid( $self->uid );
 
                 $ENV{USER} = $self->user || getpwuid($self->uid);
