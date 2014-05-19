@@ -16,7 +16,7 @@ my @accessors = qw(
     uid path gid scan_name stdout_file stderr_file pid_file fork data
     lsb_start lsb_stop lsb_sdesc lsb_desc redirect_before_fork init_config
     kill_timeout umask resource_dir help init_code
-    prereq_no_process foreground
+    prereq_no_process foreground reload_signal stop_signals
 );
 
 my $cmd_opt = "[start|stop|restart|reload|status|show_warnings|get_init_file|help]";
@@ -74,6 +74,8 @@ sub new {
         quiet                   => 0,
         umask                   => 0,
         foreground              => 0,
+        reload_signal           => 'HUP',
+        stop_signals            => [ qw(TERM TERM INT KILL) ],
     }, $class;
 
     for my $accessor ( @accessors ) {
@@ -451,7 +453,7 @@ sub do_stop {
 
     if ( $self->pid_running($start_pid) ) {
         SIGNAL:
-        foreach my $signal ( qw(TERM TERM INT KILL) ) {
+        foreach my $signal (@{ $self->stop_signals }) {
             $self->trace( "Sending $signal signal to pid $start_pid..." );
             kill $signal => $start_pid;
 
@@ -513,7 +515,7 @@ sub do_reload {
     $self->read_pid;
 
     if ( $self->pid && $self->pid_running  ) {
-        kill "SIGHUP", $self->pid;
+        kill $self->reload_signal, $self->pid;
         $self->pretty_print( "Reloaded" );
         return 0;
     } else {
@@ -983,6 +985,18 @@ If this boolean flag is set to a true value all output from the init script
 
     $daemon->quiet( 1 );
 
+=head2 reload_signal
+
+The signal to send to the daemon when reloading it.
+Default signal is C<HUP>.
+
+=head2 stop_signals
+
+An array ref of signals that should be tried (in order) when
+stopping the daemon.
+Default signals are C<TERM>, C<TERM>, C<INT> and C<KILL> (yes, C<TERM>
+is tried twice).
+
 =head1 METHODS
 
 =head2 run_command
@@ -1033,8 +1047,8 @@ Called by:
 
 =head2 do_reload
 
-Is called when reload is given as an argument.  Sends a HUP signal to the
-daemon.
+Is called when reload is given as an argument.  Sends the signal
+C<reload_signal> to the daemon.
 
     /usr/bin/my_program_launcher.pl reload
 
