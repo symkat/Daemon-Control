@@ -854,7 +854,7 @@ and STDERR will be redirected to C<stderr_file>.  Setting this to 0 will disable
 redirecting before a double fork.  This is useful when you are using a code
 reference and would like to leave the filehandles alone until you're in control.
 
-Call C<->redirect_filehandles> on the Daemon::Control instance your coderef is
+Call C<< ->redirect_filehandles >> on the Daemon::Control instance your coderef is
 passed to redirect the filehandles.
 
 =head2 stdout_file
