@@ -32,11 +32,11 @@ ok $out = get_command_output( "$^X -I$ilib $file start" ), "Started system daemo
 like $out, qr/\[Started\]/, "Daemon started.";
 ok $out = get_command_output( "$^X -I$ilib $file status" ), "Get status of system daemon.";
 like $out, qr/\[Running\]/, "Daemon running.";
-
+ok $? >> 8 == 0, "Exit Status = 0";
 sleep 10;
-
 ok $out = get_command_output( "$^X -I$ilib $file status" ), "Get status of system daemon.";
 like $out, qr/\[Not Running\]/, "Daemon not running.";
+ok $? >> 8 == 3, "Exit Status = 3";
 
 # Testing restart.
 ok $out = get_command_output( "$^X -I$ilib $file start" ), "Started system daemon";

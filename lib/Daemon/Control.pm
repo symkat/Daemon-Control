@@ -625,7 +625,7 @@ sub run_command {
 
 # Application Code.
 sub run {
-    shift->run_command( @ARGV );
+    exit shift->run_command( @ARGV );
 }
 
 sub trace {
