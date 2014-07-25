@@ -421,7 +421,14 @@ sub do_start {
     $self->fork( 2 ) unless defined $self->fork;
     $self->_double_fork if $self->fork == 2;
     $self->_fork if $self->fork == 1;
-    $self->_foreground if $self->fork == 0;
+
+    if ($self->fork == 0) {
+        $self->pretty_print( "Starting" );
+        setuid($self->uid);
+        setgid($self->gid);
+        $self->_foreground;
+    }
+
     $self->pretty_print( "Started" );
     return 0;
 }
