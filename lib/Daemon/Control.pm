@@ -13,7 +13,7 @@ $VERSION = eval $VERSION;
 
 my @accessors = qw(
     pid color_map name program program_args directory quiet
-    uid path gid scan_name stdout_file stderr_file pid_file fork data
+    path scan_name stdout_file stderr_file pid_file fork data
     lsb_start lsb_stop lsb_sdesc lsb_desc redirect_before_fork init_config
     kill_timeout umask resource_dir help init_code
     prereq_no_process foreground reload_signal stop_signals
@@ -40,25 +40,45 @@ for my $method ( @accessors ) {
 # so I'm making my own triggers for user and group.
 
 sub user {
-    my ( $self, $user ) = @_;
+    my $self = shift;
 
-    if ( $user ) {
-        $self->{user} = $user;
-        $self->_set_uid_from_name( $user );
+    if ( @_ ) {
+        $self->{user} = shift;
+        delete $self->{uid};
     }
 
     return $self->{user};
 }
 
 sub group {
-    my ( $self, $group ) = @_;
+    my $self = shift;
 
-    if ( $group ) {
-        $self->{group} = $group;
-        $self->_set_gid_from_name( $group );
+    if ( @_ ) {
+        $self->{group} = shift;
+        delete $self->{gid};
     }
 
     return $self->{group};
+}
+
+sub uid {
+    my $self = shift;
+
+    return $self->{uid} = shift if @_;
+
+    $self->_set_uid_from_name unless exists $self->{uid};
+
+    return $self->{uid}
+}
+
+sub gid {
+    my $self = shift;
+
+    return $self->{gid} = shift if @_;
+
+    $self->_set_gid_from_name unless exists $self->{gid};
+
+    return $self->{gid}
 }
 
 sub new {
@@ -78,15 +98,11 @@ sub new {
         stop_signals            => [ qw(TERM TERM INT KILL) ],
     }, $class;
 
-    for my $accessor ( @accessors ) {
+    for my $accessor ( @accessors, qw(uid gid user group) ) {
         if ( exists $args->{$accessor} ) {
             $self->{$accessor} = delete $args->{$accessor};
         }
     }
-
-    # Set the user/groups.
-    $self->user(delete $args->{user}) if exists $args->{user};
-    $self->group(delete $args->{group}) if exists $args->{group};
 
     # Shortcut caused by setting foreground or using the ENV to do it.
     if ( ( $self->foreground == 1 ) || ( $ENV{DC_FOREGROUND} ) ) {
@@ -101,20 +117,33 @@ sub new {
 }
 
 
-# Set the uid, triggered from setting a user string.
+# Set the uid, triggered from getting the uid if the user has changed.
 sub _set_uid_from_name {
-    my ( $self, $name ) = @_;
-    my $uid = getpwnam( $name );
+    my ( $self ) = @_;
+    return unless defined $self->user;
+
+    my $uid = getpwnam( $self->user );
     die "Error: Couldn't get uid for non-existent user " . $self->user
         unless defined $uid;
     $self->trace( "Set UID => $uid" );
     $self->uid( $uid );
 }
 
-# Set the uid, triggered from setting a group string.
+# Set the uid, triggered from getting the gid if the group has changed.
 sub _set_gid_from_name {
-    my ( $self, $name ) = @_;
-    my $gid = getgrnam( $name );
+    my ( $self ) = @_;
+
+    # Grab the GID if we have a UID but no GID.
+    if ( !defined $self->group && defined $self->uid ) {
+        my ( $gid ) = ( (getpwuid( $self->uid ))[3] );
+        $self->gid( $gid );
+        $self->trace( "Implicit GID => $gid" );
+        return $gid;
+    }
+
+    return unless defined $self->group;
+
+    my $gid = getgrnam( $self->group );
     die "Error: Couldn't get gid for non-existent group " . $self->group
         unless defined $gid;
     $self->trace( "Set GID => $gid" );
@@ -599,13 +628,6 @@ sub run_command {
         die "Error: name must be defined.";
     }
 
-    # Grab the GID if we have a UID but no GID.
-    if ( $self->uid && ! $self->gid ) {
-        my ( $gid ) = ( (getpwuid( $self->uid ))[3] );
-        $self->gid( $gid );
-        $self->trace( "Implicit GID => $gid" );
-    }
-    
     my $called_with = $arg || "help";
     $called_with =~ s/^[-]+//g; # Allow people to do --command too.
 
