@@ -19,7 +19,7 @@ my @accessors = qw(
     prereq_no_process foreground reload_signal stop_signals
 );
 
-my $cmd_opt = "[start|stop|restart|reload|status|show_warnings|get_init_file|help]";
+my $cmd_opt = "[start|stop|restart|reload|status|foreground|show_warnings|get_init_file|help]";
 
 # Accessor building
 
