@@ -358,7 +358,7 @@ sub pid_running {
     $pid ||= $self->read_pid;
 
     return 0 unless $self->pid >= 1;
-    return 0 unless kill 0, $self->pid;
+    return 0 unless (kill(0, $self->pid) || $!{EPERM});
 
     if ( $self->scan_name ) {
         open my $lf, "-|", "ps", "-p", $self->pid, "-o", "command="
@@ -367,9 +367,9 @@ sub pid_running {
             return 1 if $line =~ $self->scan_name;
         }
         return 0;
+    } else {
+	return 1;
     }
-    # Scan name wasn't used, testing normal PID.
-    return kill 0, $self->pid;
 }
 
 sub process_running {
