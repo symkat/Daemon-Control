@@ -721,7 +721,7 @@ __DATA__
 # Default-Stop:      0 1 6
 # Short-Description: [% SHORT_DESCRIPTION %]
 # Description:       [% DESCRIPTION %]
-### END INIT INFO`
+### END INIT INFO
 
 [% INIT_SOURCE_FILE %]
 
