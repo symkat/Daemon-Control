@@ -633,7 +633,7 @@ sub run_command {
 
     my $action = "do_" . ($called_with ? $called_with : "" );
 
-    my $allowed_actions = "Must be called with an action: $cmd_opt";
+    my $allowed_actions = "$0 must be called with an action: $cmd_opt\n";
 
     if ( $self->can($action) ) {
         return $self->$action;
