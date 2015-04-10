@@ -428,11 +428,11 @@ approach using a fifo is as follows:
 
 First, set up the stderr\_file and stdout\_file to a fifo.
 
-Daemon::Control->new({
-   ..., # normal setup
-   stderr\_file => "/var/log/myuser/myservice.fifo",
-   stdout\_file => "/var/log/myuser/myservice.fifo",
-   ..., })->run;
+    Daemon::Control->new({
+        ..., # normal setup
+        stderr_file => "/var/log/myuser/myservice.fifo",
+        stdout_file => "/var/log/myuser/myservice.fifo",
+        ..., })->run;
 
 However you need a service running that reads from the fifo, in this
 case logger(1).  When your main service (that writes to the fifos) exits
