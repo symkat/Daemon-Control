@@ -938,7 +938,7 @@ and do all that fun stuff.  This mode is recommended when the program you want
 to control has its own daemonizing code.  It is important to note that the PID
 file should be set to whatever PID file is used by the daemon.
 
-In no-fork mode, <Cfork(0)>, the program is run in the foreground.  By default
+In no-fork mode, C<fork(0)>, the program is run in the foreground.  By default
 quiet is still turned off, so status updates will be shown on the screen such
 as that the daemon started.  A shortcut to turn status off and go into foreground
 mode is C<foreground> being set to 1, or C<DC_FOREGROUND> being set as an
