@@ -266,7 +266,11 @@ sub _double_fork {
     return $self;
 }
 
-sub _foreground { shift->_launch_program } 
+sub _foreground {
+    my $self = shift;
+    $self->pretty_print( "Started" );
+    $self->_launch_program
+}
 
 sub _fork {
     my ( $self ) = @_;
