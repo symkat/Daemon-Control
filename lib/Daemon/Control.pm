@@ -17,6 +17,7 @@ my @accessors = qw(
     lsb_start lsb_stop lsb_sdesc lsb_desc redirect_before_fork init_config
     kill_timeout umask resource_dir help init_code
     prereq_no_process foreground reload_signal stop_signals
+    with_plugins
 );
 
 my $cmd_opt = "[start|stop|restart|reload|status|foreground|show_warnings|get_init_file|help]";
@@ -83,7 +84,6 @@ sub gid {
 
 sub new {
     my ( $class, @in ) = @_;
-
     my $args = ref $in[0] eq 'HASH' ? $in[0] : { @in };
 
     # Create the object with defaults.
@@ -109,6 +109,9 @@ sub new {
         $self->fork( 0 );
         $self->quiet( 1 );
     }
+      my @plugins = $self->_maybe_find_plugins;
+    $DB::single=1;
+      $self->_register_plugins(@plugins) if @plugins;
 
     die "Unknown arguments to the constructor: " . join( " ", keys %$args )
         if keys( %$args );
@@ -116,6 +119,42 @@ sub new {
     return $self;
 }
 
+sub _maybe_find_plugins {
+    my ($self) = @_;
+    my @plugins;
+    if ($self->with_plugins) {
+        my $plugins = ref($self->with_plugins)
+            ? $self->with_plugins
+	    : [$self->with_plugins];
+        @plugins = @$plugins;
+    }
+    return @plugins;
+}
+
+sub _register_plugins {
+    my ($self, @plugins) = @_;
+    my @plugin_list;
+    foreach my $plugin (@plugins) {
+        if ($plugin =~ /::/) { # Fully qualified namespace for plugin.
+	  push @plugin_list, $plugin;
+	}
+	else { # Assumed to come off Daemon::Control::Plugin::Namespace;
+	    my @name = split '_', $plugin;
+            $_ = ucfirst($_) for @name;
+            my $name = join '', @name;
+            $name =~ s/-/::/;
+            my $plugin_role = ref($self) . '::Plugin::' . $name;
+	    push @plugin_list, $plugin_role;
+	  }
+    }
+    require Role::Tiny;
+    if ( @plugin_list ) {
+      Role::Tiny->apply_roles_to_object($self, @plugin_list);
+    }
+    else {
+      warn "Trying to apply plugins to " . ref($self) . " but plugin list is entry";
+    }
+}
 
 # Set the uid, triggered from getting the uid if the user has changed.
 sub _set_uid_from_name {
