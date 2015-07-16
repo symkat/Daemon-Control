@@ -457,6 +457,21 @@ sub do_start {
     my ( $self ) = @_;
 
     # Optionally check if a process is already running with the same name
+    my $prereq_check = $self->_check_prereq_no_processes;
+    return $prereq_check if $prereq_check;
+
+    # Make sure the PID file exists.
+    $self->_check_pid_file_exists();
+
+    # Duplicate Check
+    my $is_duplicate = $self->_check_for_duplicate();
+    return $is_duplicate if $is_duplicate;
+
+    return $self->_finish_start();
+}
+
+sub _check_prereq_no_processes {
+    my ($self) = @_;
     if ($self->prereq_no_process)
     {
         my $program = $self->program;
@@ -470,20 +485,27 @@ sub do_start {
             return  1;
         }
     }
+}
 
-    # Make sure the PID file exists.
+sub _check_pid_file_exists {
+    my ($self) = @_;
     if ( ! -f $self->pid_file ) {
         $self->pid( 0 ); # Make PID invalid.
         $self->write_pid();
     }
+}
 
-    # Duplicate Check
+sub _check_for_duplicate {
+    my ($self) = @_;
     $self->read_pid;
     if ( $self->pid && $self->pid_running ) {
         $self->pretty_print( "Duplicate Running", "red" );
         return 1;
     }
+}
 
+sub _finish_start {
+    my ($self) = @_;
     $self->_create_resource_dir;
 
     $self->fork( 2 ) unless defined $self->fork;
@@ -492,6 +514,7 @@ sub do_start {
     $self->_foreground if $self->fork == 0;
     $self->pretty_print( "Started" );
     return 0;
+
 }
 
 sub do_show_warnings {
