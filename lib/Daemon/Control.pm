@@ -86,11 +86,7 @@ sub new {
     my ( $class, @in ) = @_;
 
     my $args = ref $in[0] eq 'HASH' ? $in[0] : { @in };
-    my @plugins = _maybe_find_plugins($args->{plugins});
-    require Role::Tiny if @plugins;
-    if (@plugins) {
-      $class = Role::Tiny->create_class_with_roles($class, @plugins);
-    }
+    $class = $class->apply_plugins($args->{plugins});
 
     # Create the object with defaults.
     my $self = bless {
@@ -122,16 +118,22 @@ sub new {
     return $self;
 }
 
-sub _maybe_find_plugins {
-  my ($plugins) = @_;
-  return () if ! $plugins;
+sub apply_plugins {
+  my ($class, $plugins) = @_;
+  $plugins ||= ();
   my @plugins = ref $plugins ? @$plugins : ($plugins);
+  return $class if ! $plugins;
 
   @plugins = map {
     my ($fqns, $name) = $_ =~ /^(\+?)(.*?)$/;
     $_ = "Daemon::Control::Plugin::$name" unless $fqns;
   } @plugins;
-  return @plugins;
+  require Role::Tiny if @plugins;
+  if (@plugins) {
+    $class = Role::Tiny->create_class_with_roles($class, @plugins);
+  }
+
+  return $class;
 }
 
 # Set the uid, triggered from getting the uid if the user has changed.
