@@ -514,14 +514,15 @@ sub do_show_warnings {
 }
 
 sub do_stop {
-    my ( $self ) = @_;
+    my ( $self, $start_pid ) = @_;
 
-    $self->read_pid;
-    my $start_pid = $self->pid;
+    if (! $start_pid) {
+      $self->read_pid;
+      $start_pid = $self->pid;
+    }
 
     # Probably don't want to send anything to init(1).
     return 1 unless $start_pid > 1;
-
     if ( $self->pid_running($start_pid) ) {
         SIGNAL:
         foreach my $signal (@{ $self->stop_signals }) {
@@ -537,7 +538,7 @@ sub do_stop {
             }
             last unless $self->pid_running($start_pid);
         }
-        if ( $self->pid_running($start_pid) ) {
+        if ( $ARGV[0] ne 'restart' && $self->pid_running($start_pid) ) {
             $self->pretty_print( "Failed to Stop", "red" );
             return 1;
         }
