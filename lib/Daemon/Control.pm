@@ -461,7 +461,7 @@ sub do_start {
     return $prereq_check if $prereq_check;
 
     # Make sure the PID file exists.
-    $self->_check_pid_file_exists();
+    $self->_ensure_pid_file_exists();
 
     # Duplicate Check
     my $is_duplicate = $self->_check_for_duplicate();
@@ -487,7 +487,7 @@ sub _check_prereq_no_processes {
     }
 }
 
-sub _check_pid_file_exists {
+sub _ensure_pid_file_exists {
     my ($self) = @_;
     if ( ! -f $self->pid_file ) {
         $self->pid( 0 ); # Make PID invalid.
