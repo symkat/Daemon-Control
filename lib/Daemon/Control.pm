@@ -125,8 +125,8 @@ sub with_plugins {
   return $class if ! $plugins;
 
   @plugins = map {
-    my ($fqns, $name) = $_ =~ /^(\+?)(.*?)$/;
-    $_ = "Daemon::Control::Plugin::$name" unless $fqns;
+    my ($fqns, $name) = $_ =~ /^(\+)?(.*?)$/;
+    $_ = $fqns ? $name : "Daemon::Control::Plugin::$name";
   } @plugins;
   require Role::Tiny if @plugins;
   if (@plugins) {
