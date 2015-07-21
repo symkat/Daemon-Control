@@ -1081,6 +1081,19 @@ stopping the daemon.
 Default signals are C<TERM>, C<TERM>, C<INT> and C<KILL> (yes, C<TERM>
 is tried twice).
 
+=head2 with_plugins
+
+A string or an arrayref of Daemon::Control plugins to apply.  Each entry can be in the form of a fully qualified namespace, or a string assumed to be in the C<Daemon::Control::Plugin::> namespace.  For example:
+
+  with_plugins => hot_standby, some-other_plugin SomePlugin NameSpace::For::MyCustomPlugin
+
+This will apply the plugins L<Daemon::Control::Plugin::HotStandby>,
+C<Daemon::Control::Plugin::Some::OtherPlugin>
+C<Daemon::Control::Plugin::SomePlugin> and
+C<NameSpace::For::MyCustomPlugin> in that order.  Plugins are made
+with Role::Tiny, and uses method modifiers to selectively change the
+main library behaviour.
+
 =head1 METHODS
 
 =head2 run_command
