@@ -86,7 +86,7 @@ sub new {
     my ( $class, @in ) = @_;
 
     my $args = ref $in[0] eq 'HASH' ? $in[0] : { @in };
-    $class = $class->apply_plugins($args->{plugins});
+    $class = $class->with_plugins($args->{plugins});
 
     # Create the object with defaults.
     my $self = bless {
@@ -118,7 +118,7 @@ sub new {
     return $self;
 }
 
-sub apply_plugins {
+sub with_plugins {
   my ($class, $plugins) = @_;
   $plugins ||= ();
   my @plugins = ref $plugins ? @$plugins : ($plugins);
