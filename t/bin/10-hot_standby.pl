@@ -5,10 +5,9 @@ use Daemon::Control;
 
 my ($path) = $0 =~ m{(.*/)};
 my $script = $path . '10-hot_standby_daemon.sh';
-
 Daemon::Control->new({
     name        => "My Daemon",
-    with_plugins => 'hot_standby',
+    plugins     => 'HotStandby',
     lsb_start   => '$syslog $remote_fs',
     lsb_stop    => '$syslog',
     lsb_sdesc   => 'My Daemon Short',

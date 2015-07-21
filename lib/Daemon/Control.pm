@@ -17,7 +17,7 @@ my @accessors = qw(
     lsb_start lsb_stop lsb_sdesc lsb_desc redirect_before_fork init_config
     kill_timeout umask resource_dir help init_code
     prereq_no_process foreground reload_signal stop_signals
-    with_plugins
+    plugins
 );
 
 my $cmd_opt = "[start|stop|restart|reload|status|foreground|show_warnings|get_init_file|help]";
@@ -84,7 +84,13 @@ sub gid {
 
 sub new {
     my ( $class, @in ) = @_;
+
     my $args = ref $in[0] eq 'HASH' ? $in[0] : { @in };
+    my @plugins = _maybe_find_plugins($args->{plugins});
+    require Role::Tiny if @plugins;
+    if (@plugins) {
+      $class = Role::Tiny->create_class_with_roles($class, @plugins);
+    }
 
     # Create the object with defaults.
     my $self = bless {
@@ -109,9 +115,6 @@ sub new {
         $self->fork( 0 );
         $self->quiet( 1 );
     }
-      my @plugins = $self->_maybe_find_plugins;
-    $DB::single=1;
-      $self->_register_plugins(@plugins) if @plugins;
 
     die "Unknown arguments to the constructor: " . join( " ", keys %$args )
         if keys( %$args );
@@ -120,40 +123,15 @@ sub new {
 }
 
 sub _maybe_find_plugins {
-    my ($self) = @_;
-    my @plugins;
-    if ($self->with_plugins) {
-        my $plugins = ref($self->with_plugins)
-            ? $self->with_plugins
-	    : [$self->with_plugins];
-        @plugins = @$plugins;
-    }
-    return @plugins;
-}
+  my ($plugins) = @_;
+  return () if ! $plugins;
+  my @plugins = ref $plugins ? @$plugins : ($plugins);
 
-sub _register_plugins {
-    my ($self, @plugins) = @_;
-    my @plugin_list;
-    foreach my $plugin (@plugins) {
-        if ($plugin =~ /::/) { # Fully qualified namespace for plugin.
-	  push @plugin_list, $plugin;
-	}
-	else { # Assumed to come off Daemon::Control::Plugin::Namespace;
-	    my @name = split '_', $plugin;
-            $_ = ucfirst($_) for @name;
-            my $name = join '', @name;
-            $name =~ s/-/::/;
-            my $plugin_role = ref($self) . '::Plugin::' . $name;
-	    push @plugin_list, $plugin_role;
-	  }
-    }
-    require Role::Tiny;
-    if ( @plugin_list ) {
-      Role::Tiny->apply_roles_to_object($self, @plugin_list);
-    }
-    else {
-      warn "Trying to apply plugins to " . ref($self) . " but plugin list is entry";
-    }
+  @plugins = map {
+    my ($fqns, $name) = $_ =~ /^(\+?)(.*?)$/;
+    $_ = "Daemon::Control::Plugin::$name" unless $fqns;
+  } @plugins;
+  return @plugins;
 }
 
 # Set the uid, triggered from getting the uid if the user has changed.
@@ -1081,18 +1059,24 @@ stopping the daemon.
 Default signals are C<TERM>, C<TERM>, C<INT> and C<KILL> (yes, C<TERM>
 is tried twice).
 
-=head2 with_plugins
+=head2 plugins
 
-A string or an arrayref of Daemon::Control plugins to apply.  Each entry can be in the form of a fully qualified namespace, or a string assumed to be in the C<Daemon::Control::Plugin::> namespace.  For example:
+A string or an arrayref of Daemon::Control plugins to apply.  Each
+entry can be in the form of a fully qualified namespace prepended by a
+C<+>, or a string assumed to be in the C<Daemon::Control::Plugin::>
+namespace.  For example:
 
-  with_plugins => hot_standby, some-other_plugin SomePlugin NameSpace::For::MyCustomPlugin
+  plugins => 'HotStandby'
 
-This will apply the plugins L<Daemon::Control::Plugin::HotStandby>,
-C<Daemon::Control::Plugin::Some::OtherPlugin>
-C<Daemon::Control::Plugin::SomePlugin> and
-C<NameSpace::For::MyCustomPlugin> in that order.  Plugins are made
-with Role::Tiny, and uses method modifiers to selectively change the
-main library behaviour.
+will load the L<Daemon::Control::Plugin::HotStandby> plugin
+
+  plugins => '+My::Plugin'
+
+will load the C< My::Plugin > plugin
+
+  plugins => [ qw/+My::Plugin HotStandby/ ]
+
+will load both.
 
 =head1 METHODS
 
