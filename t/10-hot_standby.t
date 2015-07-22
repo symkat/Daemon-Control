@@ -1,7 +1,12 @@
 #!/usr/bin/perl
 use warnings;
 use strict;
-use Test::More;
+BEGIN {
+	use Test::More;
+	eval 'use Role::Tiny';
+	plan skip_all => 'Role::Tiny not installed' if $@;
+}
+
 use File::Temp qw/tempfile/;
 my ($pid_fh, $fn) = tempfile();
 $ENV{DC_TEST_TEMP_FILE} = $fn;
@@ -18,7 +23,7 @@ if ( -f 't/bin/10-hot_standby.pl' ) { # Dist Directory.
 } else {
     die "Tests should be run in the dist directory or t/";
 }
-use lib $ilib;
+
 
 sub current_pid {
   seek $pid_fh, 0, 0;

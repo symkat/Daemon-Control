@@ -1,17 +1,22 @@
 #!/usr/bin/env perl
 use warnings;
 use strict;
+BEGIN {
+	use Test::More;
+	eval 'use Role::Tiny';
+	plan skip_all => 'Role::Tiny not installed' if $@;
+}
+
 package Daemon::Control::Plugin::Null;
 use Role::Tiny;
 1;
 
 use Daemon::Control;
-use Role::Tiny;
-use Test::More;
+
 for ('Null', '+Daemon::Control::Plugin::Null') {
   my $dc = Daemon::Control->with_plugins($_)->new();
-  ok(Role::Tiny::does_role($dc, 'Daemon::Control::Plugin::Null'),
+  Test::More::ok(Role::Tiny::does_role($dc, 'Daemon::Control::Plugin::Null'),
      "Plugin role is appplied");
 }
-done_testing;
+Test::More::done_testing;
 
