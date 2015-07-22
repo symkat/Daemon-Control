@@ -17,7 +17,6 @@ my @accessors = qw(
     lsb_start lsb_stop lsb_sdesc lsb_desc redirect_before_fork init_config
     kill_timeout umask resource_dir help init_code
     prereq_no_process foreground reload_signal stop_signals
-    plugins
 );
 
 my $cmd_opt = "[start|stop|restart|reload|status|foreground|show_warnings|get_init_file|help]";
