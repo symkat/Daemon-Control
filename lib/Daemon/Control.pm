@@ -86,7 +86,6 @@ sub new {
     my ( $class, @in ) = @_;
 
     my $args = ref $in[0] eq 'HASH' ? $in[0] : { @in };
-    $class = $class->with_plugins($args->{plugins});
 
     # Create the object with defaults.
     my $self = bless {
@@ -566,15 +565,6 @@ sub _send_stop_signals {
   }
   $self->pretty_print( "Stopped" );
 }
-
-sub _check_stop_outcome {
-  my ($self, $start_pid) = @_;
-}
-
-sub _cleanup_pid_file {
-  my ($self, $start_pid) = @_;
-}
-
 
 sub do_restart {
     my ( $self ) = @_;
@@ -1082,20 +1072,20 @@ is tried twice).
 
 =head2 plugins
 
-A string or an arrayref of Daemon::Control plugins to apply.  Each
+A string or an arrayref of Daemon::Control plugins to use.  Each
 entry can be in the form of a fully qualified namespace prepended by a
 C<+>, or a string assumed to be in the C<Daemon::Control::Plugin::>
 namespace.  For example:
 
-  plugins => 'HotStandby'
+  Daemon::Control->with_plugins('HotStandby')->new(...);
 
 will load the L<Daemon::Control::Plugin::HotStandby> plugin
 
-  plugins => '+My::Plugin'
+  Daemon::Control->with_plugins( '+My::Plugin')->new(...);
 
 will load the C< My::Plugin > plugin
 
-  plugins => [ qw/+My::Plugin HotStandby/ ]
+  Daemon::Control->with_plugins(plugins => [ qw/+My::Plugin HotStandby/ ]->new(...);
 
 will load both.
 

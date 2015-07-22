@@ -41,14 +41,17 @@ around do_restart => sub {
   # check new came up.  Die if failed.
   sleep (($self->kill_timeout * 2) + 1);
 
-  $self->do_stop($old_pid) if $old_pid;
+
+  return 1 unless $old_pid > 1;
+  if ( $self->pid_running($old_pid) ) {
+    my $failed = $self->_send_stop_signals($old_pid);
+    return 1 if  $failed;
+  } else {
+    $self->pretty_print( "Not Running", "red" );
+  }
+
+  $self->_check_stop_outcome($old_pid);
   $self->_ensure_pid_file_exists;
-  # zzz for a bit to ensure that new is actually up
-  # kill old
-  # replace old pid with new in pid file.
-
-  
-
   return 0;
 };
 

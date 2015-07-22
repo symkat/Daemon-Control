@@ -9,9 +9,9 @@ use Daemon::Control;
 use Role::Tiny;
 use Test::More;
 for ('Null', '+Daemon::Control::Plugin::Null') {
-  my $dc = Daemon::Control->new(plugins => $_);
-  ok(Role::Tiny::does_role($dc, 'Daemon::Control::Plugin::Null'), 
+  my $dc = Daemon::Control->with_plugins($_)->new();
+  ok(Role::Tiny::does_role($dc, 'Daemon::Control::Plugin::Null'),
      "Plugin role is appplied");
 }
-  done_testing;
+done_testing;
 

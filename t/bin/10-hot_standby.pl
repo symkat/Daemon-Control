@@ -5,9 +5,8 @@ use Daemon::Control;
 
 my ($path) = $0 =~ m{(.*/)};
 my $script = $path . '10-hot_standby_daemon.sh';
-Daemon::Control->new({
+Daemon::Control->with_plugins('HotStandby')->new({
     name        => "My Daemon",
-    plugins     => 'HotStandby',
     lsb_start   => '$syslog $remote_fs',
     lsb_stop    => '$syslog',
     lsb_sdesc   => 'My Daemon Short',
@@ -15,7 +14,6 @@ Daemon::Control->new({
     path        => '/usr/sbin/mydaemon/init.pl',
 
     program     => $script,
-    program_args => [ 10 ],
 
     pid_file    => '/tmp/hotstandby_pid',
 
