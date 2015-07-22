@@ -516,33 +516,13 @@ sub do_show_warnings {
 sub do_stop {
     my ( $self, $start_pid ) = @_;
 
-    if (! $start_pid) {
-      $self->read_pid;
-      $start_pid = $self->pid;
-    }
+    $start_pid ||= $self->_get_start_pid;
 
     # Probably don't want to send anything to init(1).
     return 1 unless $start_pid > 1;
     if ( $self->pid_running($start_pid) ) {
-        SIGNAL:
-        foreach my $signal (@{ $self->stop_signals }) {
-            $self->trace( "Sending $signal signal to pid $start_pid..." );
-            kill $signal => $start_pid;
-
-            for (1..$self->kill_timeout)
-            {
-                # abort early if the process is now stopped
-                $self->trace("checking if pid $start_pid is still running...");
-                last if not $self->pid_running($start_pid);
-                sleep 1;
-            }
-            last unless $self->pid_running($start_pid);
-        }
-        if ( $ARGV[0] ne 'restart' && $self->pid_running($start_pid) ) {
-            $self->pretty_print( "Failed to Stop", "red" );
-            return 1;
-        }
-        $self->pretty_print( "Stopped" );
+      my $failed = $self->_send_stop_signals($start_pid);
+      return 1 if  $failed;
     } else {
         $self->pretty_print( "Not Running", "red" );
     }
@@ -557,6 +537,44 @@ sub do_stop {
     }
     return 0;
 }
+
+sub _get_start_pid {
+  my ($self) = @_;
+  $self->read_pid;
+  return $self->pid;
+}
+
+sub _send_stop_signals {
+  my ($self, $start_pid) = @_;
+ SIGNAL:
+  foreach my $signal (@{ $self->stop_signals }) {
+    $self->trace( "Sending $signal signal to pid $start_pid..." );
+    kill $signal => $start_pid;
+    
+    for (1..$self->kill_timeout)
+      {
+	# abort early if the process is now stopped
+	$self->trace("checking if pid $start_pid is still running...");
+	last if not $self->pid_running($start_pid);
+	sleep 1;
+      }
+    last unless $self->pid_running($start_pid);
+  }
+  if ( $ARGV[0] ne 'restart' && $self->pid_running($start_pid) ) {
+    $self->pretty_print( "Failed to Stop", "red" );
+    return 1;
+  }
+  $self->pretty_print( "Stopped" );
+}
+
+sub _check_stop_outcome {
+  my ($self, $start_pid) = @_;
+}
+
+sub _cleanup_pid_file {
+  my ($self, $start_pid) = @_;
+}
+
 
 sub do_restart {
     my ( $self ) = @_;
