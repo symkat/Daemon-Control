@@ -12,11 +12,8 @@ Daemon::Control->with_plugins('HotStandby')->new({
     lsb_sdesc   => 'My Daemon Short',
     lsb_desc    => 'My Daemon controls the My Daemon daemon.',
     path        => '/usr/sbin/mydaemon/init.pl',
-
     program     => $script,
-
-    pid_file    => '/tmp/hotstandby_pid',
-
+    pid_file    => $ENV{DC_TEST_TEMP_FILE} || '/tmp/daemon_control_manual_test_pid',
     stderr_file => '/tmp/test_hot_standby_err',
     stdout_file => '/tmp/test_hot_standby_out',
 

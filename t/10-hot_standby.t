@@ -2,6 +2,9 @@
 use warnings;
 use strict;
 use Test::More;
+use File::Temp qw/tempfile/;
+my ($pid_fh, $fn) = tempfile();
+$ENV{DC_TEST_TEMP_FILE} = $fn;
 
 my ( $file, $ilib );
 
@@ -17,6 +20,12 @@ if ( -f 't/bin/10-hot_standby.pl' ) { # Dist Directory.
 }
 use lib $ilib;
 
+sub current_pid {
+  seek $pid_fh, 0, 0;
+  my $pid = <$pid_fh>;
+  chomp $pid;
+  return $pid;
+}
 
 sub get_command_output {
     my ( @command ) = @_;
@@ -45,9 +54,15 @@ ok $out = get_command_output( "$^X -I$ilib $file start" ), "Started system daemo
 like $out, qr/\[Started\]/, "Daemon started for restarting";
 ok $out = get_command_output( "$^X -I$ilib $file status" ), "Get status of system daemon.";
 like $out, qr/\[Running\]/, "Daemon running for restarting.";
+my $start_pid = current_pid();
 ok $out = get_command_output( "$^X -I$ilib $file restart" ), "Get status of system daemon.";
 like $out, qr/\[Found existing.*\[Started\]/ms, "Daemon restarted.";
+my $next_pid = current_pid();
 ok $out = get_command_output( "$^X -I$ilib $file status" ), "Get status of system daemon.";
+
+# not sure how to check that $start_pid is still alive for a period of time before being killed at this stage.
+isnt $start_pid, $next_pid, "pid file contents swapped";
+
 like $out, qr/\[Running\]/, "Daemon running after restart.";
 ok $out = get_command_output( "$^X -I$ilib $file stop" ), "Get status of system daemon.";
 like $out, qr/\[Stopped\]/, "Daemon stopped after restart.";
