@@ -8,7 +8,7 @@ use File::Path qw( make_path );
 use Cwd 'abs_path';
 require 5.008001; # Supporting 5.8.1+
 
-our $VERSION = '0.001005'; # 0.1.5
+our $VERSION = '0.00100X'; # 0.1.X
 $VERSION = eval $VERSION;
 
 my @accessors = qw(
@@ -17,7 +17,6 @@ my @accessors = qw(
     lsb_start lsb_stop lsb_sdesc lsb_desc redirect_before_fork init_config
     kill_timeout umask resource_dir help init_code
     prereq_no_process foreground reload_signal stop_signals
-    plugins
 );
 
 my $cmd_opt = "[start|stop|restart|reload|status|foreground|show_warnings|get_init_file|help]";
