@@ -8,7 +8,7 @@ use File::Path qw( make_path );
 use Cwd 'abs_path';
 require 5.008001; # Supporting 5.8.1+
 
-our $VERSION = '0.001005'; # 0.1.5
+our $VERSION = '0.00100X'; # 0.1.X
 $VERSION = eval $VERSION;
 
 my @accessors = qw(
@@ -116,6 +116,23 @@ sub new {
     return $self;
 }
 
+sub with_plugins {
+  my ($class, $plugins) = @_;
+  $plugins ||= ();
+  my @plugins = ref $plugins ? @$plugins : ($plugins);
+  return $class if ! $plugins;
+
+  @plugins = map {
+    my ($fqns, $name) = $_ =~ /^(\+)?(.*?)$/;
+    $_ = $fqns ? $name : "Daemon::Control::Plugin::$name";
+  } @plugins;
+  require Role::Tiny if @plugins;
+  if (@plugins) {
+    $class = Role::Tiny->create_class_with_roles($class, @plugins);
+  }
+
+  return $class;
+}
 
 # Set the uid, triggered from getting the uid if the user has changed.
 sub _set_uid_from_name {
@@ -418,6 +435,21 @@ sub do_start {
     my ( $self ) = @_;
 
     # Optionally check if a process is already running with the same name
+    my $prereq_check = $self->_check_prereq_no_processes;
+    return $prereq_check if $prereq_check;
+
+    # Make sure the PID file exists.
+    $self->_ensure_pid_file_exists();
+
+    # Duplicate Check
+    my $is_duplicate = $self->_check_for_duplicate();
+    return $is_duplicate if $is_duplicate;
+
+    return $self->_finish_start();
+}
+
+sub _check_prereq_no_processes {
+    my ($self) = @_;
     if ($self->prereq_no_process)
     {
         my $program = $self->program;
@@ -431,20 +463,27 @@ sub do_start {
             return  1;
         }
     }
+}
 
-    # Make sure the PID file exists.
+sub _ensure_pid_file_exists {
+    my ($self) = @_;
     if ( ! -f $self->pid_file ) {
         $self->pid( 0 ); # Make PID invalid.
         $self->write_pid();
     }
+}
 
-    # Duplicate Check
+sub _check_for_duplicate {
+    my ($self) = @_;
     $self->read_pid;
     if ( $self->pid && $self->pid_running ) {
         $self->pretty_print( "Duplicate Running", "red" );
         return 1;
     }
+}
 
+sub _finish_start {
+    my ($self) = @_;
     $self->_create_resource_dir;
 
     $self->fork( 2 ) unless defined $self->fork;
@@ -453,6 +492,7 @@ sub do_start {
     $self->_foreground if $self->fork == 0;
     $self->pretty_print( "Started" );
     return 0;
+
 }
 
 sub do_show_warnings {
@@ -472,34 +512,15 @@ sub do_show_warnings {
 }
 
 sub do_stop {
-    my ( $self ) = @_;
+    my ( $self, $start_pid ) = @_;
 
-    $self->read_pid;
-    my $start_pid = $self->pid;
+    $start_pid ||= $self->_get_start_pid;
 
     # Probably don't want to send anything to init(1).
     return 1 unless $start_pid > 1;
-
     if ( $self->pid_running($start_pid) ) {
-        SIGNAL:
-        foreach my $signal (@{ $self->stop_signals }) {
-            $self->trace( "Sending $signal signal to pid $start_pid..." );
-            kill $signal => $start_pid;
-
-            for (1..$self->kill_timeout)
-            {
-                # abort early if the process is now stopped
-                $self->trace("checking if pid $start_pid is still running...");
-                last if not $self->pid_running($start_pid);
-                sleep 1;
-            }
-            last unless $self->pid_running($start_pid);
-        }
-        if ( $self->pid_running($start_pid) ) {
-            $self->pretty_print( "Failed to Stop", "red" );
-            return 1;
-        }
-        $self->pretty_print( "Stopped" );
+      my $failed = $self->_send_stop_signals($start_pid);
+      return 1 if  $failed;
     } else {
         $self->pretty_print( "Not Running", "red" );
     }
@@ -513,6 +534,35 @@ sub do_stop {
       unlink($self->pid_file) if $self->read_pid == $start_pid;
     }
     return 0;
+}
+
+sub _get_start_pid {
+  my ($self) = @_;
+  $self->read_pid;
+  return $self->pid;
+}
+
+sub _send_stop_signals {
+  my ($self, $start_pid) = @_;
+ SIGNAL:
+  foreach my $signal (@{ $self->stop_signals }) {
+    $self->trace( "Sending $signal signal to pid $start_pid..." );
+    kill $signal => $start_pid;
+    
+    for (1..$self->kill_timeout)
+      {
+	# abort early if the process is now stopped
+	$self->trace("checking if pid $start_pid is still running...");
+	last if not $self->pid_running($start_pid);
+	sleep 1;
+      }
+    last unless $self->pid_running($start_pid);
+  }
+  if ( $ARGV[0] ne 'restart' && $self->pid_running($start_pid) ) {
+    $self->pretty_print( "Failed to Stop", "red" );
+    return 1;
+  }
+  $self->pretty_print( "Stopped" );
 }
 
 sub do_restart {
@@ -1019,6 +1069,25 @@ stopping the daemon.
 Default signals are C<TERM>, C<TERM>, C<INT> and C<KILL> (yes, C<TERM>
 is tried twice).
 
+=head2 plugins
+
+A string or an arrayref of Daemon::Control plugins to use.  Each
+entry can be in the form of a fully qualified namespace prepended by a
+C<+>, or a string assumed to be in the C<Daemon::Control::Plugin::>
+namespace.  For example:
+
+  Daemon::Control->with_plugins('HotStandby')->new(...);
+
+will load the L<Daemon::Control::Plugin::HotStandby> plugin
+
+  Daemon::Control->with_plugins( '+My::Plugin')->new(...);
+
+will load the C< My::Plugin > plugin
+
+  Daemon::Control->with_plugins(plugins => [ qw/+My::Plugin HotStandby/ ]->new(...);
+
+will load both.
+
 =head1 METHODS
 
 =head2 run_command
@@ -1112,6 +1181,60 @@ An accessor for the PID.  Set by read_pid, or when the program is started.
 
 A function to dump the LSB compatible init script.  Used by do_get_init_file.
 
+=head1 FAQ
+
+=head2 LOGGING TO SYSLOG
+
+Logging a daemon::control script to syslog can be a little involved.
+If you're using Log4perl or similar, consider using
+L<Log::Dispatch::Syslog> and/or L<Sys::Syslog>.  An alternative
+approach using a fifo is as follows:
+
+First, set up the stderr_file and stdout_file to a fifo.
+
+    Daemon::Control->new({
+        ..., # normal setup
+        stderr_file => "/var/log/myuser/myservice.fifo",
+        stdout_file => "/var/log/myuser/myservice.fifo",
+        ..., })->run;
+
+However you need a service running that reads from the fifo, in this
+case logger(1).  When your main service (that writes to the fifos) exits
+this close is read by C< logger > and causes it to exit.  In order to avoid
+that we created a service that respawns logger when it dies. This
+example is for a redhat system running upstart:
+
+The following script can be dropped into /etc/init as fifo-logger.conf
+And then started with C< initctl start fifo-logger >.
+
+  # fifo-logger - logger process for fcgi
+  #
+  # Will respawn the logger process as it exits on file close
+
+  start on stopped rc RUNLEVEL=[345]
+
+  stop on starting shutdown
+
+  console output
+  respawn
+
+  script
+    echo $$ > /var/run/fifo-logger.pid
+    exec logger -f /var/log/myuser/myservice.fifo -t myservice -p local0.notice
+  end script
+  
+  pre-start script
+    if [ ! -e /var/log/myuser/myservice.fifo ]; then
+      mkfifo /var/log/myuser/myservice.fifo
+    fi
+    chown hiive.hiive /var/log/myuser/myservice.fifo
+    chmod 660 /var/log/myuser/myservice.fifo
+  end script
+
+From this point, all the output will be sent to syslog as local0.notice and can
+then be routed/cycled a needed without requiring a restart of the application.
+
+
 =head1 AUTHOR
 
 =over 4
@@ -1131,6 +1254,10 @@ Kaitlyn Parkhurst (SymKat) I<E<lt>symkat@symkat.comE<gt>> ( Blog: L<http://symka
 =item * Karen Etheridge (ether) I<E<lt>ether@cpan.orgE<gt>>
 
 =item * Ævar Arnfjörð Bjarmason (avar) I<E<lt>avar@cpan.orgE<gt>>
+
+=item * Kieren Diment I<E<lt>zarquon@cpan.org<gt>>
+
+=item * Mark Curtis I<E<lt>mark.curtis@affinitylive.com<gt>>
 
 =back
 

@@ -22,7 +22,7 @@ Write a program that describes the daemon:
     use strict;
     use Daemon::Control;
 
-    Daemon::Control->new(
+    exit Daemon::Control->new(
         name        => "My Daemon",
         lsb_start   => '$syslog $remote_fs',
         lsb_stop    => '$syslog',
@@ -44,7 +44,7 @@ Write a program that describes the daemon:
 By default `run` will use @ARGV for the action, and exit with an LSB compatible
 exit code.  For finer control, you can use `run_command`, which will return
 the exit code, and accepts the action as an argument.  This enables more programatic
-control, as well as running multiple instances of M<Daemon::Control> from one script.
+control, as well as running multiple instances of [Daemon::Control](https://metacpan.org/pod/Daemon::Control) from one script.
 
     my $daemon = Daemon::Control->new(
         ...
@@ -58,10 +58,6 @@ You can then call the program:
 You can also make an LSB compatible init script:
 
     /home/symkat/etc/init.d/program get_init_file > /etc/init.d/program
-
-
-
-
 
 # CONSTRUCTOR
 
@@ -185,7 +181,7 @@ and STDERR will be redirected to `stderr_file`.  Setting this to 0 will disable
 redirecting before a double fork.  This is useful when you are using a code
 reference and would like to leave the filehandles alone until you're in control.
 
-Call `-`redirect\_filehandles> on the Daemon::Control instance your coderef is
+Call `->redirect_filehandles` on the Daemon::Control instance your coderef is
 passed to redirect the filehandles.
 
 ## stdout\_file
@@ -253,7 +249,6 @@ as that the daemon started.  A shortcut to turn status off and go into foregroun
 mode is `foreground` being set to 1, or `DC_FOREGROUND` being set as an
 environment variable.  Additionally, calling `foreground` instead of `start` will
 override the forking mode at run-time.
-    
 
     $daemon->fork( 0 );
 
@@ -317,13 +312,25 @@ If this boolean flag is set to a true value all output from the init script
 
     $daemon->quiet( 1 );
 
+## reload\_signal
+
+The signal to send to the daemon when reloading it.
+Default signal is `HUP`.
+
+## stop\_signals
+
+An array ref of signals that should be tried (in order) when
+stopping the daemon.
+Default signals are `TERM`, `TERM`, `INT` and `KILL` (yes, `TERM`
+is tried twice).
+
 # METHODS
 
 ## run\_command
 
 This function will process an action on the Daemon::Control instance.
 Valid arguments are those which a `do_` method exists for, such as 
-__start__, __stop__, __restart__.  Returns the LSB exit code for the
+**start**, **stop**, **restart**.  Returns the LSB exit code for the
 action processed.
 
 ## run
@@ -344,10 +351,10 @@ exits. Called by:
 
 ## do\_foreground
 
-Is called when __foreground__ is given as an argument.  Starts the 
+Is called when **foreground** is given as an argument.  Starts the 
 program or code reference and stays in the foreground -- no forking
 is done, regardless of the compile-time arguments.  Additionally,
-turns `quiet` on to avoid showing M<Daemon::Control> output.
+turns `quiet` on to avoid showing [Daemon::Control](https://metacpan.org/pod/Daemon::Control) output.
 
     /usr/bin/my_program_launcher.pl foreground
 
@@ -367,8 +374,8 @@ Called by:
 
 ## do\_reload
 
-Is called when reload is given as an argument.  Sends a HUP signal to the
-daemon.
+Is called when reload is given as an argument.  Sends the signal
+`reload_signal` to the daemon.
 
     /usr/bin/my_program_launcher.pl reload
 
@@ -410,9 +417,62 @@ An accessor for the PID.  Set by read\_pid, or when the program is started.
 
 A function to dump the LSB compatible init script.  Used by do\_get\_init\_file.
 
+# FAQ
+
+## LOGGING TO SYSLOG
+
+Logging a daemon::control script to syslog can be a little involved.
+If you're using Log4perl or similar, consider using
+[Log::Dispatch::Syslog](https://metacpan.org/pod/Log::Dispatch::Syslog) and/or [Sys::Syslog](https://metacpan.org/pod/Sys::Syslog).  An alternative
+approach using a fifo is as follows:
+
+First, set up the stderr\_file and stdout\_file to a fifo.
+
+    Daemon::Control->new({
+        ..., # normal setup
+        stderr_file => "/var/log/myuser/myservice.fifo",
+        stdout_file => "/var/log/myuser/myservice.fifo",
+        ..., })->run;
+
+However you need a service running that reads from the fifo, in this
+case logger(1).  When your main service (that writes to the fifos) exits
+this close is read by ` logger ` and causes it to exit.  In order to avoid
+that we created a service that respawns logger when it dies. This
+example is for a redhat system running upstart:
+
+The following script can be dropped into /etc/init as fifo-logger.conf
+And then started with ` initctl start fifo-logger `.
+
+    # fifo-logger - logger process for fcgi
+    #
+    # Will respawn the logger process as it exits on file close
+
+    start on stopped rc RUNLEVEL=[345]
+
+    stop on starting shutdown
+
+    console output
+    respawn
+
+    script
+      echo $$ > /var/run/fifo-logger.pid
+      exec logger -f /var/log/myuser/myservice.fifo -t myservice -p local0.notice
+    end script
+    
+    pre-start script
+      if [ ! -e /var/log/myuser/myservice.fifo ]; then
+        mkfifo /var/log/myuser/myservice.fifo
+      fi
+      chown hiive.hiive /var/log/myuser/myservice.fifo
+      chmod 660 /var/log/myuser/myservice.fifo
+    end script
+
+From this point, all the output will be sent to syslog as local0.notice and can
+then be routed/cycled a needed without requiring a restart of the application.
+
 # AUTHOR
 
-    Kaitlyn Parkhurst (SymKat) _<symkat@symkat.com>_ ( Blog: [http://symkat.com/](http://symkat.com/) )
+> Kaitlyn Parkhurst (SymKat) _<symkat@symkat.com>_ ( Blog: [http://symkat.com/](http://symkat.com/) )
 
 ## CONTRIBUTORS
 
@@ -420,6 +480,8 @@ A function to dump the LSB compatible init script.  Used by do\_get\_init\_file.
 - Mike Doherty (doherty) _<doherty@cpan.org>_
 - Karen Etheridge (ether) _<ether@cpan.org>_
 - Ævar Arnfjörð Bjarmason (avar) _<avar@cpan.org>_
+- Kieren Diment _<zarquon@cpan.org<gt_>
+- Mark Curtis _<mark.curtis@affinitylive.com<gt_>
 
 ## SPONSORS
 
