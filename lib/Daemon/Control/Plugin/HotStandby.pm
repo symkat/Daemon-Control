@@ -10,8 +10,6 @@ Daemon::Control::Plugin::HotStandby
 This is a plugin basically for PSGI workers so that a standby worker
 can be spun up prior to terminating the original worker.
 
-Currently it doesn't work
-
 =head2 AUTHOR
 
 Kieren Diment <zarquon@cpan.org>
