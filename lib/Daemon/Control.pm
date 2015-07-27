@@ -116,6 +116,34 @@ sub new {
     return $self;
 }
 
+sub with_plugins {
+    my ( $class, @in ) = @_;
+
+    # ->with_plugins()->new is just ->new...
+    return $class unless @in;
+
+    # Make sure we have Role::Tiny installed.
+    local $@;
+    eval "require Role::Tiny";
+    if ( $@ ) {
+        die "Error: Role::Tiny is required for with_plugins to function.\n";
+    }
+
+    # Take an array or arrayref as an argument
+    # and mutate it into a list like this:
+    #   'Module'  -> Becomes -> 'Root::Module'
+    #   '+Module' ->  Becomes -> 'Module'
+    my @plugins = map {
+        substr( $_, 0, 1 ) eq '+'
+            ? substr( $_, 1 )
+            : "Daemon::Control::Plugin::$_" 
+    } ref $in[0] eq 'ARRAY' ? @{ $in[0] } : @in;
+
+
+    # Compose the plugins into our class, and return for the user
+    # to call ->new().
+    return Role::Tiny->create_class_with_roles( $class, @plugins );
+}
 
 # Set the uid, triggered from getting the uid if the user has changed.
 sub _set_uid_from_name {
@@ -1019,6 +1047,40 @@ stopping the daemon.
 Default signals are C<TERM>, C<TERM>, C<INT> and C<KILL> (yes, C<TERM>
 is tried twice).
 
+=head1 PLUGINS
+
+Daemon Control supports a simple plugin system using L<Role::Tiny>.
+
+=head2 with_plugins
+
+With plugins adds the plugins to Daemon::Control.
+
+    Daemon::Control->with_plugins( qw( MyFirstPlugin +MySecondPlugin) )->new(
+    ...
+    );
+
+Note:
+
+MyFirstPlugin will load Daemon::Control::Plugin::MyFirstPlugin
+
++MySecondPlugin will load MySecondPlugin
+
+
+=head2 Writing A Plugin
+
+Your plugin should use the name Daemon::Control::Plugin::YourModuleName and
+YourModuleName should reasonably match the effect your plugin has on
+Daemon::Control.
+
+You can replace Daemon::Control methods by writing your own and using 
+Role::Tiny within your class to allow it to be composed into Daemon::Control.
+
+The default Daemon::Control ships with no dependancies and supports Perl 
+5.8.1+, to use the plugin system your module MUST declare dependency on 
+L<Role::Tiny> and if you wish to use the C<around>, C<before> and C<after> 
+your module MUST declare dependance on L<Class::Method::Modifiers> in your 
+package.
+
 =head1 METHODS
 
 =head2 run_command
@@ -1131,6 +1193,10 @@ Kaitlyn Parkhurst (SymKat) I<E<lt>symkat@symkat.comE<gt>> ( Blog: L<http://symka
 =item * Karen Etheridge (ether) I<E<lt>ether@cpan.orgE<gt>>
 
 =item * Ævar Arnfjörð Bjarmason (avar) I<E<lt>avar@cpan.orgE<gt>>
+
+=item * Kieren Diment I<E<lt>zarquon@cpan.org<gt>>
+
+=item * Mark Curtis I<E<lt>mark.curtis@affinitylive.com<gt>>
 
 =back
 
