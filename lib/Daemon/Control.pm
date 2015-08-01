@@ -136,7 +136,7 @@ sub with_plugins {
     my @plugins = map {
         substr( $_, 0, 1 ) eq '+'
             ? substr( $_, 1 )
-            : "Daemon::Control::Plugin::$_" 
+            : "Daemon::Control::Plugin::$_"
     } ref $in[0] eq 'ARRAY' ? @{ $in[0] } : @in;
 
 
@@ -185,17 +185,36 @@ sub redirect_filehandles {
     if ( $self->stdout_file ) {
         my $file = $self->stdout_file;
         $file = $file eq '/dev/null' ? File::Spec->devnull : $file;
-        open STDOUT, ">>", $file
-            or die "Failed to open STDOUT to $file: $!";
-        $self->trace( "STDOUT redirected to $file" );
 
+        if ( ref $file eq 'ARRAY' ) {
+            my $mode = shift @$file;
+            open STDOUT, $mode, @$file ? @$file : ()
+                or die "Failed to open STDOUT with args $mode @$file: $!";
+
+            $self->trace("STDOUT redirected to open(STDOUT $mode @$file)");
+        }
+        else {
+            open STDOUT, ">>", $file
+                or die "Failed to open STDOUT to $file: $!";
+            $self->trace( "STDOUT redirected to $file" );
+        }
     }
     if ( $self->stderr_file ) {
         my $file = $self->stderr_file;
         $file = $file eq '/dev/null' ? File::Spec->devnull : $file;
-        open STDERR, ">>", $file
-            or die "Failed to open STDERR to $file: $!";
-        $self->trace( "STDERR redirected to $file" );
+
+        if ( ref $file eq 'ARRAY' ) {
+            my $mode = shift @$file;
+            open STDERR, $mode, @$file ? @$file : ()
+                or die "Failed to open STDERR with args $mode @$file: $!";
+
+            $self->trace("STDERR redirected to open(STDERR $mode @$file)");
+        }
+        else {
+            open STDERR, ">>", $file
+                or die "Failed to open STDERR to $file: $!";
+            $self->trace("STDERR redirected to $file");
+        }
     }
 }
 
@@ -294,7 +313,7 @@ sub _double_fork {
     return $self;
 }
 
-sub _foreground { shift->_launch_program } 
+sub _foreground { shift->_launch_program }
 
 sub _fork {
     my ( $self ) = @_;
@@ -644,7 +663,7 @@ sub run_template {
 
 sub run_command {
     my ( $self, $arg ) = @_;
-    
+
     # Error Checking.
     if ( ! $self->program ) {
         die "Error: program must be defined.";
@@ -914,12 +933,22 @@ in double fork mode.
 
     $daemon->stdout_file( "/tmp/mydaemon.stdout" );
 
+Alternatively, you can specify an arrayref of arguments to C<open()>:
+
+    $daemon->stdout_file( [ '>',  '/tmp/overwrite-every-run'  ] );
+    $daemon->stdout_file( [ '|-', 'my_pipe_program', '-a foo' ] );
+
 =head2 stderr_file
 
 If provided stderr will be redirected to the given file.  This is only supported
 in double fork mode.
 
     $daemon->stderr_file( "/tmp/mydaemon.stderr" );
+
+Alternatively, you can specify an arrayref of arguments to C<open()>:
+
+    $daemon->stderr_file( [ '>',  '/tmp/overwrite-every-run'  ] );
+    $daemon->stderr_file( [ '|-', 'my_pipe_program', '-a foo' ] );
 
 =head2 pid_file
 
@@ -972,7 +1001,7 @@ as that the daemon started.  A shortcut to turn status off and go into foregroun
 mode is C<foreground> being set to 1, or C<DC_FOREGROUND> being set as an
 environment variable.  Additionally, calling C<foreground> instead of C<start> will
 override the forking mode at run-time.
-    
+
     $daemon->fork( 0 );
 
     $daemon->fork( 1 );
@@ -1072,13 +1101,13 @@ Your plugin should use the name Daemon::Control::Plugin::YourModuleName and
 YourModuleName should reasonably match the effect your plugin has on
 Daemon::Control.
 
-You can replace Daemon::Control methods by writing your own and using 
+You can replace Daemon::Control methods by writing your own and using
 Role::Tiny within your class to allow it to be composed into Daemon::Control.
 
-The default Daemon::Control ships with no dependancies and supports Perl 
-5.8.1+, to use the plugin system your module MUST declare dependency on 
-L<Role::Tiny> and if you wish to use the C<around>, C<before> and C<after> 
-your module MUST declare dependance on L<Class::Method::Modifiers> in your 
+The default Daemon::Control ships with no dependancies and supports Perl
+5.8.1+, to use the plugin system your module MUST declare dependency on
+L<Role::Tiny> and if you wish to use the C<around>, C<before> and C<after>
+your module MUST declare dependance on L<Class::Method::Modifiers> in your
 package.
 
 =head1 METHODS
@@ -1086,7 +1115,7 @@ package.
 =head2 run_command
 
 This function will process an action on the Daemon::Control instance.
-Valid arguments are those which a C<do_> method exists for, such as 
+Valid arguments are those which a C<do_> method exists for, such as
 B<start>, B<stop>, B<restart>.  Returns the LSB exit code for the
 action processed.
 
@@ -1095,7 +1124,7 @@ action processed.
 This will make your program act as an init file, accepting input from
 the command line.  Run will exit with 0 for success and uses LSB exit
 codes.  As such no code should be used after ->run is called.  Any code
-in your file should be before this.  This is a shortcut for 
+in your file should be before this.  This is a shortcut for
 
     exit Daemon::Control->new(...)->run_command( @ARGV );
 
@@ -1108,7 +1137,7 @@ exits. Called by:
 
 =head2 do_foreground
 
-Is called when B<foreground> is given as an argument.  Starts the 
+Is called when B<foreground> is given as an argument.  Starts the
 program or code reference and stays in the foreground -- no forking
 is done, regardless of the compile-time arguments.  Additionally,
 turns C<quiet> on to avoid showing L<Daemon::Control> output.
@@ -1197,6 +1226,8 @@ Kaitlyn Parkhurst (SymKat) I<E<lt>symkat@symkat.comE<gt>> ( Blog: L<http://symka
 =item * Kieren Diment I<E<lt>zarquon@cpan.org<gt>>
 
 =item * Mark Curtis I<E<lt>mark.curtis@affinitylive.com<gt>>
+
+=item * Zoffix Znet I<E<lt>zoffix@cpan.org<gt>>
 
 =back
 

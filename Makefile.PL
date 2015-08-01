@@ -1,5 +1,5 @@
 use inc::Module::Install;
-  
+
 # Define metadata
 name           'Daemon-Control';
 all_from       'lib/Daemon/Control.pm';
@@ -15,5 +15,6 @@ requires       'Cwd'            => '0';
 requires       'File::Path'     => '2.08';
 
 test_requires  'Test::More'     => '0.88';
+test_requires  'File::Temp'     => '0.14';
 
 WriteAll;
