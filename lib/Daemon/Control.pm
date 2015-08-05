@@ -1205,11 +1205,7 @@ A function to dump the LSB compatible init script.  Used by do_get_init_file.
 
 =head1 AUTHOR
 
-=over 4
-
 Kaitlyn Parkhurst (SymKat) I<E<lt>symkat@symkat.comE<gt>> ( Blog: L<http://symkat.com/> )
-
-=back
 
 =head2 CONTRIBUTORS
 
