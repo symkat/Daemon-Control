@@ -1,3 +1,6 @@
+Revision history for Daemon-Control
+
+0.001007  2015-07-26 SymKat <symkat@symkat.com>
     * Module name POD format fixed (RT 93280)
     * Add "forground" to --help (by marcusramberg)
     * Add with_plugins to support a simple plugin system
