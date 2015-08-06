@@ -8,6 +8,10 @@ license        'perl';
 # uses Module::Install::Repository
 auto_set_repository;
 
+resources
+    bugtracker => 'http://github.com/symkat/Daemon-Control/issues',
+    IRC        => 'irc://irc.freenode.org/#perl-daemon-control';
+
 # Specific dependencies
 requires       'File::Spec'     => '0';
 requires       'POSIX'          => '0';
