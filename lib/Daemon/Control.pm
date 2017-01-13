@@ -408,7 +408,7 @@ sub pid_running {
     return 0 unless kill 0, $self->pid;
 
     if ( $self->scan_name ) {
-        open my $lf, "-|", "ps", "-p", $self->pid, "-o", "command="
+        open my $lf, "-|", "ps", "-w", "-w", "-p", $self->pid, "-o", "command="
             or die "Failed to get pipe to ps for scan_name.";
         while ( my $line = <$lf> ) {
             return 1 if $line =~ $self->scan_name;
