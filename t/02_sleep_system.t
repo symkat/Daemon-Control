@@ -3,6 +3,9 @@ use warnings;
 use strict;
 use Test::More;
 
+# enable coverage for get_command_output() commands
+$ENV{'PERL5OPT'} = '-MDevel::Cover';
+
 my ( $file, $ilib );
 
 # Let's make it so people can test in t/ or in the dist directory.
