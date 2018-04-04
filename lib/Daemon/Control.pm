@@ -729,7 +729,7 @@ __DATA__
 
 if [ -x [% SCRIPT %] ];
 then
-    [% SCRIPT %] $1
+    [% SCRIPT %] $@
 else
     echo "Required program [% SCRIPT %] not found!"
     exit 1;
