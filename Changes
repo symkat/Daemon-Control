@@ -1,3 +1,6 @@
+0.001009
+    * Add '.' to @INC so Module::Install continues to work.
+
 0.001008  2015-08-07 <symkat@symkat.com>
     * Fix issue with author name
     * Allow for custom open() args for stdout_file and stderr_file

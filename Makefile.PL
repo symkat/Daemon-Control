@@ -1,4 +1,5 @@
 use inc::Module::Install;
+BEGIN { push @INC, '.' unless $INC[-1] eq '.' }
 
 # Define metadata
 name           'Daemon-Control';
