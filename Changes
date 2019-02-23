@@ -1,4 +1,8 @@
-0.001009
+0.001010 2019-02-23 SymKat <symkat@symkat.com>
+    * Add '.' to @INC so Module::Install continues to work,
+      thank you Gregor Herrmann (gregoa) (PR: #97)
+    
+0.001009 2019-02-19 SymKat <symkat@symkat.com>
     * Add '.' to @INC so Module::Install continues to work.
 
 0.001008  2015-08-07 <symkat@symkat.com>

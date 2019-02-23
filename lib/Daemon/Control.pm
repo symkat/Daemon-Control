@@ -8,7 +8,7 @@ use File::Path qw( make_path );
 use Cwd 'abs_path';
 require 5.008001; # Supporting 5.8.1+
 
-our $VERSION = '0.001009'; # 0.1.9
+our $VERSION = '0.001010'; # 0.1.10
 $VERSION = eval $VERSION;
 
 my @accessors = qw(
