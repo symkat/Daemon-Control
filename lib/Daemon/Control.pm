@@ -1203,6 +1203,60 @@ An accessor for the PID.  Set by read_pid, or when the program is started.
 
 A function to dump the LSB compatible init script.  Used by do_get_init_file.
 
+=head1 FAQ
+
+=head2 LOGGING TO SYSLOG
+
+Logging a daemon::control script to syslog can be a little involved.
+If you're using Log4perl or similar, consider using
+L<Log::Dispatch::Syslog> and/or L<Sys::Syslog>.  An alternative
+approach using a fifo is as follows:
+
+First, set up the stderr_file and stdout_file to a fifo.
+
+    Daemon::Control->new({
+        ..., # normal setup
+        stderr_file => "/var/log/myuser/myservice.fifo",
+        stdout_file => "/var/log/myuser/myservice.fifo",
+        ..., })->run;
+
+However you need a service running that reads from the fifo, in this
+case logger(1).  When your main service (that writes to the fifos) exits
+this close is read by C< logger > and causes it to exit.  In order to avoid
+that we created a service that respawns logger when it dies. This
+example is for a redhat system running upstart:
+
+The following script can be dropped into /etc/init as fifo-logger.conf
+And then started with C< initctl start fifo-logger >.
+
+  # fifo-logger - logger process for fcgi
+  #
+  # Will respawn the logger process as it exits on file close
+
+  start on stopped rc RUNLEVEL=[345]
+
+  stop on starting shutdown
+
+  console output
+  respawn
+
+  script
+    echo $$ > /var/run/fifo-logger.pid
+    exec logger -f /var/log/myuser/myservice.fifo -t myservice -p local0.notice
+  end script
+  
+  pre-start script
+    if [ ! -e /var/log/myuser/myservice.fifo ]; then
+      mkfifo /var/log/myuser/myservice.fifo
+    fi
+    chown hiive.hiive /var/log/myuser/myservice.fifo
+    chmod 660 /var/log/myuser/myservice.fifo
+  end script
+
+From this point, all the output will be sent to syslog as local0.notice and can
+then be routed/cycled a needed without requiring a restart of the application.
+
+
 =head1 AUTHOR
 
 Kaitlyn Parkhurst (SymKat) I<E<lt>symkat@symkat.comE<gt>> ( Blog: L<http://symkat.com/> )
