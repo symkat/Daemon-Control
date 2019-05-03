@@ -264,10 +264,14 @@ sub _double_fork {
     my $pid = fork();
 
     $self->trace( "_double_fork()" );
-    if ( $pid == 0 ) { # Child, launch the process here.
+    if ( not defined $pid ) { # We couldn't fork.  =(
+        die "Cannot fork: $!";
+    } elsif ( $pid == 0 ) { # Child, launch the process here.
         setsid(); # Become the process leader.
         my $new_pid = fork();
-        if ( $new_pid == 0 ) { # Our double fork.
+        if ( not defined $new_pid ) {
+            die "Cannot fork: $!";
+        } elsif ( $new_pid == 0 ) { # Our double fork.
 
             if ( $self->gid ) {
                 setgid( $self->gid );
@@ -297,16 +301,12 @@ sub _double_fork {
             }
 
             $self->_launch_program;
-        } elsif ( not defined $new_pid ) {
-            warn "Cannot fork: $!";
         } else {
             $self->pid( $new_pid );
             $self->trace("Set PID => $new_pid" );
             $self->write_pid;
             _exit 0;
         }
-    } elsif ( not defined $pid ) { # We couldn't fork.  =(
-        warn "Cannot fork: $!";
     } else { # In the parent, $pid = child's PID, return it.
         waitpid( $pid, 0 );
     }
@@ -320,10 +320,10 @@ sub _fork {
     my $pid = fork();
 
     $self->trace( "_fork()" );
-    if ( $pid == 0 ) { # Child, launch the process here.
+    if ( not defined $pid ) {
+        die "Cannot fork: $!";
+    } elsif ( $pid == 0 ) { # Child, launch the process here.
         $self->_launch_program;
-    } elsif ( not defined $pid ) {
-        warn "Cannot fork: $!";
     } else { # In the parent, $pid = child's PID, return it.
         $self->pid( $pid );
         $self->trace("Set PID => $pid" );
