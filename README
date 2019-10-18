@@ -1,0 +1,12 @@
+To install this module, run:
+
+    perl Makefile.PL
+    make
+    make test
+    make install
+
+Note that you will need the Perl modules "inc::Module::Install",
+"Module::Install::Repository", as well as the dependencies listed in
+Makefile.PL, to install this module.
+
+You can find more information about this module in the file README.md
