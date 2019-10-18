@@ -41,7 +41,7 @@ __DATA__
 # Default-Stop:      0 1 6
 # Short-Description: My Daemon Short
 # Description:       My Daemon controls the My Daemon daemon.
-### END INIT INFO`
+### END INIT INFO
 
 \[ -r /etc/default/my_program \] && . /etc/default/my_program
 
