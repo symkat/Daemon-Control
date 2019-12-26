@@ -18,5 +18,6 @@ requires       'File::Path'     => '2.08';
 
 test_requires  'Test::More'     => '0.88';
 test_requires  'File::Temp'     => '0.14';
+test_requires  'Devel::Cover'   => '1.23';
 
 WriteAll;

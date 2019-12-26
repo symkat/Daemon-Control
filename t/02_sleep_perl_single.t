@@ -9,11 +9,11 @@ $ENV{'PERL5OPT'} = '-MDevel::Cover';
 my ( $file, $ilib );
 
 # Let's make it so people can test in t/ or in the dist directory.
-if ( -f 't/bin/02_sleep_perl.pl' ) { # Dist Directory.
-    $file = "t/bin/02_sleep_perl.pl";
+if ( -f 't/bin/02_sleep_perl_single.pl' ) { # Dist Directory.
+    $file = "t/bin/02_sleep_perl_single.pl";
     $ilib = "lib";
-} elsif ( -f 'bin/02_sleep_perl.pl' ) {
-    $file = "bin/02_sleep_perl.pl";
+} elsif ( -f 'bin/02_sleep_perl_single.pl' ) {
+    $file = "bin/02_sleep_perl_single.pl";
     $ilib = "../lib";
 } else {
     die "Tests should be run in the dist directory or t/";
@@ -33,26 +33,17 @@ my $out;
 
 ok $out = get_command_output( "$^X -I$ilib $file start" ), "Started perl daemon";
 like $out, qr/\[Started\]/, "Daemon started.";
-ok $out = get_command_output( "$^X -I$ilib $file status" ), "Get status of perl daemon.";
-like $out, qr/\[Running\]/, "Daemon running.";
 
 sleep 10;
 
 ok $out = get_command_output( "$^X -I$ilib $file status" ), "Get status of perl daemon.";
 like $out, qr/\[Not Running\]/, "Daemon not running";
 
+ok $out = get_command_output( "$^X -I$ilib $file help" ), "Get help for perl daemon.";
+like $out, qr/Some test help$/, "Daemon help";
+
 # Testing restart.
 ok $out = get_command_output( "$^X -I$ilib $file start" ), "Started system daemon";
 like $out, qr/\[Started\]/, "Daemon started for restarting.";
-ok $out = get_command_output( "$^X -I$ilib $file status" ), "Get status of system daemon.";
-like $out, qr/\[Running\]/, "Daemon running for restarting.";
-ok $out = get_command_output( "$^X -I$ilib $file reload" ), "Reload system daemon.";
-like $out, qr/\[Reloaded\]/, "Daemon reloaded.";
-ok $out = get_command_output( "$^X -I$ilib $file restart" ), "Restart of system daemon.";
-like $out, qr/\[Started\]/, "Daemon restarted.";
-ok $out = get_command_output( "$^X -I$ilib $file status" ), "Get status of system daemon.";
-like $out, qr/\[Running\]/, "Daemon running after restart.";
-ok $out = get_command_output( "$^X -I$ilib $file stop" ), "Get status of system daemon.";
-like $out, qr/\[Stopped\]/, "Daemon stopped after restart.";
 
 done_testing;
